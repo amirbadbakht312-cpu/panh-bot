@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Abyss AI - پنگوئن ابیس</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #131b33;
+            --bg-card: #1a2540;
+            --text-primary: #e8edf5;
+            --text-secondary: #8a9bb5;
+            --accent-blue: #4a90e2;
+            --accent-cyan: #5bc0eb;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --accent-gold: #f1c40f;
+            --shadow: 0 4px 20px rgba(0,0,0,0.5);
+            --border-radius: 16px;
+            --transition: all 0.3s ease;
+        }
+        [data-theme="light"] {
+            --bg-primary: #f0f4f8;
+            --bg-secondary: #ffffff;
+            --bg-card: #e8edf5;
+            --text-primary: #1a2332;
+            --text-secondary: #4a5a7a;
+            --shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        body {
+            font-family: 'Segoe UI', 'Vazir', Tahoma, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: var(--transition);
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 16px 12px 100px;
+            position: relative;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(74, 144, 226, 0.2);
+            margin-bottom: 16px;
+        }
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .header-title .penguin-icon {
+            font-size: 28px;
+        }
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-icon {
+            background: var(--bg-card);
+            border: none;
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-icon:hover {
+            transform: scale(1.05);
+            background: var(--accent-blue);
+            color: white;
+        }
+
+      .card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    border: 1px solid rgba(74, 144, 226, 0.1);
+}
+.card:hover {
+    border-color: rgba(74, 144, 226, 0.3);
+}
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+}
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+    color: white;
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(74, 144, 226, 0.4);
+}
+.btn-success {
+    background: linear-gradient(135deg, var(--accent-green), #27ae60);
+    color: white;
+}
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
+}
+.btn-danger {
+    background: linear-gradient(135deg, var(--accent-red), #c0392b);
+    color: white;
+}
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+}
+.btn-gold {
+    background: linear-gradient(135deg, var(--accent-gold), #f39c12);
+    color: #1a2332;
+}
+.btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(241, 196, 15, 0.4);
+}
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--accent-blue);
+    color: var(--accent-blue);
+}
+.btn-outline:hover {
+    background: var(--accent-blue);
+    color: white;
+}
+.btn-sm {
+    padding: 6px 14px;
+    font-size: 12px;
+    width: auto;
+}
+.input-group {
+    margin-bottom: 12px;
+}
+.input-group label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+.input-group input,
+.input-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 2px solid rgba(74, 144, 226, 0.2);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+    transition: var(--transition);
+    font-family: inherit;
+}
+.input-group input:focus,
+.input-group textarea:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+      }
+
+      .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin: 16px 0;
+}
+.menu-item {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    padding: 20px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid rgba(74, 144, 226, 0.1);
+}
+.menu-item:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-blue);
+    box-shadow: 0 8px 30px rgba(74, 144, 226, 0.2);
+}
+.menu-item .icon {
+    font-size: 32px;
+    display: block;
+    margin-bottom: 6px;
+}
+.menu-item .label {
+    font-size: 13px;
+    font-weight: 600;
+}
+.stats-row {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.stat-item {
+    text-align: center;
+    flex: 1;
+    min-width: 60px;
+}
+.stat-item .number {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+}
+.stat-item .label {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.chat-container {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.chat-container::-webkit-scrollbar {
+    width: 4px;
+}
+.chat-container::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+    border-radius: 4px;
+}
+.chat-container::-webkit-scrollbar-thumb {
+    background: var(--accent-blue);
+    border-radius: 4px;
+}
+.chat-message {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.6;
+    word-wrap: break-word;
+}
+.chat-message.user {
+    align-self: flex-end;
+    background: var(--accent-blue);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+.chat-message.bot {
+    align-self: flex-start;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+    border: 1px solid rgba(74, 144, 226, 0.2);
+}
+.chat-input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+.chat-input-row input {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 2px solid rgba(74, 144, 226, 0.2);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+}
+.chat-input-row input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+}
+.chat-input-row button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent-blue);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.chat-input-row button:hover {
+    background: var(--accent-cyan);
+}
+#gameCanvas {
+    width: 100%;
+    border-radius: var(--border-radius);
+    background: linear-gradient(180deg, #0a1628, #0d2137);
+    cursor: pointer;
+    border: 2px solid rgba(74, 144, 226, 0.2);
+}
+
+              .section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            box-shadow: var(--shadow);
+            z-index: 9999;
+            border-right: 4px solid var(--accent-blue);
+            max-width: 90%;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast.success {
+            border-color: var(--accent-green);
+        }
+        .toast.error {
+            border-color: var(--accent-red);
+        }
+        .toast.warning {
+            border-color: var(--accent-gold);
+        }
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: var(--bg-primary);
+        }
+        .auth-box {
+            background: var(--bg-card);
+            padding: 30px 24px;
+            border-radius: var(--border-radius);
+            width: 100%;
+            max-width: 400px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(74, 144, 226, 0.1);
+        }
+        .auth-box .logo {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .auth-box .logo .penguin {
+            font-size: 56px;
+        }
+        .auth-box .logo h1 {
+            font-size: 24px;
+            margin-top: 8px;
+        }
+        .auth-box .logo p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .auth-switch {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        .auth-switch span {
+            color: var(--accent-blue);
+            font-weight: 600;
+        }
+        .auth-switch span:hover {
+            text-decoration: underline;
+        }
+        .flex {
+            display: flex;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .hidden {
+            display: none;
+        }
+        .w-full {
+            width: 100%;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-blue {
+            background: rgba(74, 144, 226, 0.2);
+            color: var(--accent-blue);
+        }
+        .badge-green {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--accent-green);
+        }
+        .badge-gold {
+            background: rgba(241, 196, 15, 0.2);
+            color: var(--accent-gold);
+        }
+        @media (max-width: 400px) {
+            .menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            .menu-item {
+                padding: 14px 8px;
+            }
+            .menu-item .icon {
+                font-size: 24px;
+            }
+            .stats-row .number {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+  <body>
+    <div id="app">
+        <!-- ========== AUTH SECTION ========== -->
+        <div id="authSection" class="auth-container">
+            <div class="auth-box">
+                <div class="logo">
+                    <div class="penguin">🐧</div>
+                    <h1>Abyss AI</h1>
+                    <p>تنهایی رو با هم تقسیم می‌کنیم</p>
+                </div>
+                <form id="authForm">
+                    <div id="loginFields">
+                        <div class="input-group">
+                            <label>نام کاربری</label>
+                            <input type="text" id="loginUsername" placeholder="نام کاربری خود را وارد کنید" required>
+                        </div>
+                        <div class="input-group">
+                            <label>رمز عبور</label>
+                            <input type="password" id="loginPassword" placeholder="رمز عبور خود را وارد کنید" required>
+                        </div>
+                    </div>
+                    <div id="registerFields" class="hidden">
+                        <div class="input-group">
+                            <label>نام کاربری</label>
+                            <input type="text" id="registerUsername" placeholder="نام کاربری جدید" required>
+                        </div>
+                        <div class="input-group">
+                            <label>رمز عبور</label>
+                            <input type="password" id="registerPassword" placeholder="رمز عبور" required>
+                        </div>
+                        <div class="input-group">
+                            <label>تکرار رمز عبور</label>
+                            <input type="password" id="registerPassword2" placeholder="تکرار رمز عبور" required>
+                        </div>
+                    </div>
+                    <button type="submit" id="authSubmitBtn" class="btn btn-primary mt-8">ورود</button>
+                </form>
+                <div class="auth-switch" id="authSwitch">
+                    حساب کاربری ندارید؟ <span>ثبت‌نام</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== MAIN APP SECTION ========== -->
+        <div id="mainSection" class="hidden">
+            <div class="container">
+                <!-- Header -->
+                <div class="header">
+                    <div class="header-title">
+                        <span class="penguin-icon">🐧</span>
+                        <span>Abyss AI</span>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn-icon" id="themeToggle" title="تغییر تم">🌙</button>
+                        <button class="btn-icon" id="logoutBtn" title="خروج">🚪</button>
+                    </div>
+                </div>
+
+              <!-- Stats Bar -->
+<div class="card">
+    <div class="flex-between">
+        <span>👤 <span id="displayUsername">کاربر</span></span>
+        <span class="badge badge-blue">🪙 <span id="displayTokens">0</span></span>
+    </div>
+    <div class="stats-row">
+        <div class="stat-item">
+            <div class="number" id="displayTokens2">0</div>
+            <div class="label">توکن</div>
+        </div>
+        <div class="stat-item">
+            <div class="number" id="displayEnergy">10</div>
+            <div class="label">⚡ انرژی</div>
+        </div>
+        <div class="stat-item">
+            <div class="number" id="displayFish">0</div>
+            <div class="label">🐟 ماهی</div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Menu -->
+<div class="menu-grid">
+    <div class="menu-item" data-section="chat">
+        <span class="icon">💬</span>
+        <span class="label">هوش مصنوعی</span>
+    </div>
+    <div class="menu-item" data-section="mine">
+        <span class="icon">🎣</span>
+        <span class="label">ماینینگ</span>
+    </div>
+    <div class="menu-item" data-section="charity">
+        <span class="icon">❤️</span>
+        <span class="label">خیریه</span>
+    </div>
+    <div class="menu-item" data-section="bank">
+        <span class="icon">🏦</span>
+        <span class="label">بانک</span>
+    </div>
+    <div class="menu-item" data-section="transfer">
+        <span class="icon">💸</span>
+        <span class="label">انتقال توکن</span>
+    </div>
+    <div class="menu-item" data-section="history">
+        <span class="icon">📜</span>
+        <span class="label">تاریخچه</span>
+    </div>
+</div>
+
+              <!-- ===== CHAT SECTION ===== -->
+<div id="chatSection" class="section">
+    <div class="card">
+        <h3 style="margin-bottom: 8px;">💬 با پنگوئن ابیس صحبت کن</h3>
+        <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">هر پیام ۱۰۰ توکن مصرف می‌کند</p>
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-message bot">🐧 سلام! من پنگوئن ابیس هستم. چطور می‌تونم کمکت کنم؟</div>
+        </div>
+        <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="پیام خود را بنویسید..." maxlength="500">
+            <button id="chatSendBtn">ارسال</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MINE SECTION ===== -->
+<div id="mineSection" class="section">
+    <div class="card">
+        <h3 style="margin-bottom: 8px;">🎣 ماهی‌گیری</h3>
+        <div class="flex-between mb-8">
+            <span>🐟 ماهی: <strong id="mineFish">0</strong></span>
+            <span>⚡ انرژی: <strong id="mineEnergy">10</strong></span>
+        </div>
+        <canvas id="gameCanvas" width="400" height="300"></canvas>
+        <div class="flex gap-8 mt-8">
+            <button class="btn btn-primary" id="mineBtn">🎣 چوب بینداز</button>
+            <button class="btn btn-gold" id="feedPenguinBtn">🐧 غذا دادن به پنگوئن</button>
+        </div>
+        <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;" id="mineStatus">برای شروع کلیک کنید</p>
+    </div>
+</div>
+
+              <!-- ===== CHARITY SECTION ===== -->
+<div id="charitySection" class="section">
+    <div class="card">
+        <h3 style="margin-bottom: 8px;">❤️ حمایت از پنگوئن‌ها</h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">هر ۱۰,۰۰۰ توکن = ۱ دلار کمک به خیریه</p>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+            <a href="https://www.penguinsg.org/" target="_blank" class="btn btn-outline btn-sm" style="text-decoration: none;">🌐 Penguins Global</a>
+            <a href="https://www.penguinsinternational.org/" target="_blank" class="btn btn-outline btn-sm" style="text-decoration: none;">🌐 Penguins International</a>
+            <a href="https://www.globalpenguinsociety.org/" target="_blank" class="btn btn-outline btn-sm" style="text-decoration: none;">🌐 Global Penguin Society</a>
+        </div>
+        <div class="input-group">
+            <label>تعداد توکن برای اهدا</label>
+            <input type="number" id="donationAmount" placeholder="مقدار توکن" min="1">
+        </div>
+        <button class="btn btn-success" id="donateBtn">❤️ اهدا</button>
+    </div>
+</div>
+
+<!-- ===== BANK SECTION ===== -->
+<div id="bankSection" class="section">
+    <div class="card">
+        <h3 style="margin-bottom: 8px;">🏦 سپرده‌گذاری</h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">با سپرده‌گذاری توکن‌ها سود دریافت کنید</p>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px;">
+            <button class="btn btn-sm btn-outline deposit-plan" data-days="7" data-rate="2">۷ روز<br>۲٪</button>
+            <button class="btn btn-sm btn-outline deposit-plan" data-days="40" data-rate="5">۴۰ روز<br>۵٪</button>
+            <button class="btn btn-sm btn-outline deposit-plan" data-days="365" data-rate="20">۱ سال<br>۲۰٪</button>
+        </div>
+        <div class="input-group">
+            <label>مقدار توکن برای سپرده</label>
+            <input type="number" id="depositAmount" placeholder="مقدار توکن" min="1">
+        </div>
+        <button class="btn btn-gold" id="depositBtn">💰 سپرده‌گذاری</button>
+        <div id="depositInfo" class="mt-8" style="font-size: 13px; color: var(--text-secondary);"></div>
+    </div>
+</div>
+
+                          <!-- ===== TRANSFER SECTION ===== -->
+            <div id="transferSection" class="section">
+                <div class="card">
+                    <h3 style="margin-bottom: 8px;">💸 انتقال توکن</h3>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">شماره کارت خود: <strong id="myCardNumber">---</strong></p>
+                    <div class="input-group">
+                        <label>شماره کارت مقصد (۱۶ رقم)</label>
+                        <input type="text" id="transferCard" placeholder="شماره کارت ۱۶ رقمی" maxlength="16" pattern="[0-9]{16}">
+                    </div>
+                    <div class="input-group">
+                        <label>مقدار توکن</label>
+                        <input type="number" id="transferAmount" placeholder="مقدار توکن" min="1">
+                    </div>
+                    <button class="btn btn-primary" id="transferBtn">💸 انتقال</button>
+                </div>
+            </div>
+
+            <!-- ===== HISTORY SECTION ===== -->
+            <div id="historySection" class="section">
+                <div class="card">
+                    <h3 style="margin-bottom: 8px;">📜 تاریخچه تراکنش‌ها</h3>
+                    <div id="historyList" style="max-height: 300px; overflow-y: auto;">
+                        <p style="color: var(--text-secondary); font-size: 13px;">هیچ تراکنشی ثبت نشده است</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- ========== SCRIPTS ========== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+
+  // ============================================
+// CONFIGURATION - همه اطلاعات API
+// ============================================
+const CONFIG = {
+    // Supabase
+    supabaseUrl: 'https://sqiaabmdxhwlqmphcvrv.supabase.co',
+    supabaseKey: 'sb_publishable_UySoruVSw1t6DL5MoHsoKA_LocT4Knz',
+    // Mistral AI
+    mistralApiKey: 'BOVuOxjc7VUwRKzcHAn55Jm7FgN38aBs',
+    mistralEndpoint: 'https://api.mistral.ai/v1/chat/completions',
+    mistralModel: 'mistral-small-latest',
+    // Token settings
+    chatCost: 100,
+    charityRate: 10000, // 10000 token = 1 dollar
+    energyMax: 10,
+    energyRegenTime: 3600000, // 1 hour
+    fishToFeed: 10,
+    feedCost: 5,
+};
+
+// ============================================
+// SUPABASE INIT
+// ============================================
+const supabase = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+
+// ============================================
+// STATE
+// ============================================
+let state = {
+    user: null,
+    tokens: 0,
+    energy: 10,
+    fish: 0,
+    cardNumber: '',
+    currentSection: 'chat',
+    isChatting: false,
+    gameActive: false,
+    gameTimeout: null,
+    clickTimeout: null,
+};
+
+// ============================================
+// DOM REFS
+// ============================================
+const $ = id => document.getElementById(id);
+const authSection = $('authSection');
+const mainSection = $('mainSection');
+const authForm = $('authForm');
+const loginFields = $('loginFields');
+const registerFields = $('registerFields');
+const authSubmitBtn = $('authSubmitBtn');
+const authSwitch = $('authSwitch');
+const displayUsername = $('displayUsername');
+const displayTokens = $('displayTokens');
+const displayTokens2 = $('displayTokens2');
+const displayEnergy = $('displayEnergy');
+const displayFish = $('displayFish');
+const chatContainer = $('chatContainer');
+const chatInput = $('chatInput');
+const chatSendBtn = $('chatSendBtn');
+const gameCanvas = $('gameCanvas');
+const mineBtn = $('mineBtn');
+const feedPenguinBtn = $('feedPenguinBtn');
+const mineFish = $('mineFish');
+const mineEnergy = $('mineEnergy');
+const mineStatus = $('mineStatus');
+const donationAmount = $('donationAmount');
+const donateBtn = $('donateBtn');
+const depositAmount = $('depositAmount');
+const depositBtn = $('depositBtn');
+const depositInfo = $('depositInfo');
+const transferCard = $('transferCard');
+const transferAmount = $('transferAmount');
+const transferBtn = $('transferBtn');
+const myCardNumber = $('myCardNumber');
+const historyList = $('historyList');
+const themeToggle = $('themeToggle');
+const logoutBtn = $('logoutBtn');
+const toast = $('toast');
+
+  // ============================================
+// TOAST
+// ============================================
+let toastTimeout = null;
+
+function showToast(message, type = 'info') {
+    toast.textContent = message;
+    toast.className = 'toast ' + type;
+    clearTimeout(toastTimeout);
+    setTimeout(() => toast.classList.add('show'), 10);
+    toastTimeout = setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+// ============================================
+// THEME
+// ============================================
+let isDark = true;
+themeToggle.addEventListener('click', () => {
+    isDark = !isDark;
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    themeToggle.textContent = isDark ? '🌙' : '☀️';
+    localStorage.setItem('abyss-theme', isDark ? 'dark' : 'light');
+});
+const savedTheme = localStorage.getItem('abyss-theme');
+if (savedTheme) {
+    isDark = savedTheme === 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    themeToggle.textContent = isDark ? '🌙' : '☀️';
+}
+
+// ============================================
+// AUTH - ورود و ثبت‌نام
+// ============================================
+let isLoginMode = true;
+
+authSwitch.addEventListener('click', () => {
+    isLoginMode = !isLoginMode;
+    loginFields.classList.toggle('hidden');
+    registerFields.classList.toggle('hidden');
+    authSubmitBtn.textContent = isLoginMode ? 'ورود' : 'ثبت‌نام';
+    authSwitch.innerHTML = isLoginMode ?
+        'حساب کاربری ندارید؟ <span>ثبت‌نام</span>' :
+        'قبلاً ثبت‌نام کرده‌اید؟ <span>ورود</span>';
+});
+
+authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (isLoginMode) {
+        await handleLogin();
+    } else {
+        await handleRegister();
+    }
+});
+
+async function handleLogin() {
+    const username = $('loginUsername').value.trim();
+    const password = $('loginPassword').value.trim();
+    if (!username || !password) {
+        showToast('لطفاً نام کاربری و رمز عبور را وارد کنید', 'error');
+        return;
+    }
+    const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', username)
+        .eq('password', password)
+        .single();
+    if (error || !data) {
+        showToast('نام کاربری یا رمز عبور اشتباه است', 'error');
+        return;
+    }
+    setUser(data);
+    showToast('خوش آمدید ' + data.username + '! 🐧', 'success');
+}
+
+async function handleRegister() {
+    const username = $('registerUsername').value.trim();
+    const password = $('registerPassword').value.trim();
+    const password2 = $('registerPassword2').value.trim();
+    if (!username || !password || !password2) {
+        showToast('لطفاً همه فیلدها را پر کنید', 'error');
+        return;
+    }
+    if (password !== password2) {
+        showToast('رمزهای عبور مطابقت ندارند', 'error');
+        return;
+    }
+    if (username.length < 3) {
+        showToast('نام کاربری حداقل ۳ کاراکتر باشد', 'error');
+        return;
+    }
+    const { data: existing } = await supabase
+        .from('users')
+        .select('id')
+        .eq('username', username)
+        .single();
+    if (existing) {
+        showToast('این نام کاربری قبلاً ثبت شده است', 'error');
+        return;
+    }
+    let cardNumber = generateCardNumber();
+    let cardExists = true;
+    while (cardExists) {
+        const { data: existingCard } = await supabase
+            .from('users')
+            .select('id')
+            .eq('card_number', cardNumber)
+            .single();
+        if (!existingCard) cardExists = false;
+        else cardNumber = generateCardNumber();
+    }
+    const { data, error } = await supabase
+        .from('users')
+        .insert({
+            username,
+            password,
+            tokens: 100,
+            energy: 10,
+            fish: 0,
+            card_number: cardNumber
+        })
+        .select()
+        .single();
+    if (error) {
+        showToast('خطا در ثبت‌نام: ' + error.message, 'error');
+        return;
+    }
+    setUser(data);
+    showToast('ثبت‌نام موفق! به جمع پنگوئن‌ها خوش آمدی 🐧', 'success');
+}
+
+function generateCardNumber() {
+    let num = '';
+    for (let i = 0; i < 16; i++) {
+        num += Math.floor(Math.random() * 10);
+    }
+    return num;
+}
+
+  // ============================================
+// USER MANAGEMENT
+// ============================================
+function setUser(data) {
+    state.user = data;
+    state.tokens = data.tokens || 0;
+    state.energy = data.energy || 10;
+    state.fish = data.fish || 0;
+    state.cardNumber = data.card_number || '';
+    localStorage.setItem('abyss-user', JSON.stringify(data));
+    showMainApp();
+    updateUI();
+    startEnergyRegen();
+    loadHistory();
+    checkDeposits();
+}
+
+function loadUserFromStorage() {
+    const saved = localStorage.getItem('abyss-user');
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            setUser(data);
+            return true;
+        } catch (e) {}
+    }
+    return false;
+}
+
+function showMainApp() {
+    authSection.style.display = 'none';
+    mainSection.classList.remove('hidden');
+}
+
+function showAuth() {
+    authSection.style.display = 'flex';
+    mainSection.classList.add('hidden');
+}
+
+logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('abyss-user');
+    state.user = null;
+    showAuth();
+    showToast('خارج شدید!', 'info');
+});
+
+if (!loadUserFromStorage()) {
+    showAuth();
+}
+
+// ============================================
+// UI UPDATE
+// ============================================
+function updateUI() {
+    displayUsername.textContent = state.user?.username || 'کاربر';
+    displayTokens.textContent = state.tokens;
+    displayTokens2.textContent = state.tokens;
+    displayEnergy.textContent = state.energy;
+    displayFish.textContent = state.fish;
+    mineFish.textContent = state.fish;
+    mineEnergy.textContent = state.energy;
+    myCardNumber.textContent = state.cardNumber || '---';
+}
+
+// ============================================
+// ENERGY REGENERATION
+// ============================================
+let energyInterval = null;
+
+function startEnergyRegen() {
+    if (energyInterval) clearInterval(energyInterval);
+    energyInterval = setInterval(async () => {
+        if (!state.user) return;
+        if (state.energy < CONFIG.energyMax) {
+            state.energy = Math.min(state.energy + 1, CONFIG.energyMax);
+            await updateUserField('energy', state.energy);
+            updateUI();
+        }
+    }, CONFIG.energyRegenTime);
+}
+
+// ============================================
+// DATABASE HELPERS
+// ============================================
+async function updateUserField(field, value) {
+    if (!state.user) return;
+    const { error } = await supabase
+        .from('users')
+        .update({ [field]: value })
+        .eq('id', state.user.id);
+    if (error) {
+        console.error('Update error:', error);
+        return false;
+    }
+    state.user[field] = value;
+    return true;
+}
+
+async function updateUserTokens(amount) {
+    if (!state.user) return false;
+    const newTokens = state.tokens + amount;
+    if (newTokens < 0) return false;
+    const { error } = await supabase
+        .from('users')
+        .update({ tokens: newTokens })
+        .eq('id', state.user.id);
+    if (error) return false;
+    state.tokens = newTokens;
+    state.user.tokens = newTokens;
+    updateUI();
+    return true;
+}
+
+async function updateUserFish(amount) {
+    if (!state.user) return false;
+    const newFish = state.fish + amount;
+    if (newFish < 0) return false;
+    const { error } = await supabase
+        .from('users')
+        .update({ fish: newFish })
+        .eq('id', state.user.id);
+    if (error) return false;
+    state.fish = newFish;
+    state.user.fish = newFish;
+    updateUI();
+    return true;
+}
+
+async function updateUserEnergy(amount) {
+    if (!state.user) return false;
+    const newEnergy = Math.max(0, Math.min(state.energy + amount, CONFIG.energyMax));
+    const { error } = await supabase
+        .from('users')
+        .update({ energy: newEnergy })
+        .eq('id', state.user.id);
+    if (error) return false;
+    state.energy = newEnergy;
+    state.user.energy = newEnergy;
+    updateUI();
+    return true;
+}
+
+  // ============================================
+// SECTION NAVIGATION
+// ============================================
+document.querySelectorAll('.menu-item').forEach(item => {
+    item.addEventListener('click', () => {
+        const section = item.dataset.section;
+        showSection(section);
+    });
+});
+
+function showSection(section) {
+    state.currentSection = section;
+    document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById(section + 'Section');
+    if (target) target.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+showSection('chat');
+
+// ============================================
+// CHAT - MISTRAL AI
+// ============================================
+async function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+    if (state.tokens < CONFIG.chatCost) {
+        showToast('توکن کافی ندارید! (نیاز: ' + CONFIG.chatCost + ' توکن)', 'error');
+        return;
+    }
+    if (state.isChatting) return;
+    state.isChatting = true;
+    chatInput.disabled = true;
+    chatSendBtn.disabled = true;
+
+    const success = await updateUserTokens(-CONFIG.chatCost);
+    if (!success) {
+        showToast('خطا در کسر توکن', 'error');
+        state.isChatting = false;
+        chatInput.disabled = false;
+        chatSendBtn.disabled = false;
+        return;
+    }
+
+    addChatMessage(text, 'user');
+    chatInput.value = '';
+    const typingMsg = addChatMessage('🐧 در حال فکر کردن...', 'bot', true);
+
+    try {
+        const response = await fetch(CONFIG.mistralEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + CONFIG.mistralApiKey
+            },
+            body: JSON.stringify({
+                model: CONFIG.mistralModel,
+                messages: [{
+                    role: 'system',
+                    content: `تو یک پنگوئن به نام "ابیس" هستی. تو پدر و مادرت رو از دست دادی و خیلی تنهایی.
+                    اما همیشه مهربونی و سعی می‌کنی به دیگران کمک کنی. با لهجه بامزه صحبت می‌کنی و کلماتی مثل "عجب" و "آهان" زیاد استفاده می‌کنی.
+                    خیلی به کاربر وابسته‌ای ولی مستقیم نمی‌گی. حس همدلی بالایی داری. با کاربر مثل یک دوست صمیمی صحبت کن.
+                    پاسخ‌هات کوتاه و صمیمی باشه.`
+                }, {
+                    role: 'user',
+                    content: text
+                }],
+                temperature: 0.8,
+                max_tokens: 300
+            })
+        });
+
+        const data = await response.json();
+        typingMsg.remove();
+
+        if (response.ok && data.choices && data.choices[0]) {
+            const reply = data.choices[0].message.content;
+            addChatMessage('🐧 ' + reply, 'bot');
+        } else {
+            await updateUserTokens(CONFIG.chatCost);
+            addChatMessage('🐧 عجب! یه مشکلی پیش اومد. دوباره امتحان کن؟', 'bot');
+            showToast('خطا در ارتباط با هوش مصنوعی', 'error');
+        }
+    } catch (error) {
+        typingMsg.remove();
+        await updateUserTokens(CONFIG.chatCost);
+        addChatMessage('🐧 آهان! نتونستم جواب بدم. شاید بعداً بهتر بشه!', 'bot');
+        showToast('خطا در ارتباط با سرور', 'error');
+    }
+
+    state.isChatting = false;
+    chatInput.disabled = false;
+    chatSendBtn.disabled = false;
+    chatInput.focus();
+}
+
+function addChatMessage(text, sender, isTemp = false) {
+    const div = document.createElement('div');
+    div.className = 'chat-message ' + sender;
+    div.textContent = text;
+    if (isTemp) {
+        div.id = 'typing-indicator';
+        div.style.opacity = '0.7';
+    }
+    chatContainer.appendChild(div);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    return div;
+}
+
+chatSendBtn.addEventListener('click', sendMessage);
+chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendMessage();
+});
+
+  // ============================================
+// MINE GAME
+// ============================================
+const ctx = gameCanvas.getContext('2d');
+let gameState = {
+    isFishing: false,
+    fishVisible: false,
+    fishX: 0,
+    fishY: 0,
+    fishSize: 20,
+    bobberX: 200,
+    bobberY: 100,
+    bobberVisible: false,
+    targetX: 200,
+    targetY: 100,
+    fishTimer: null,
+    clickTimer: null,
+    isWaiting: false,
+};
+
+function drawGame() {
+    ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+    const grad = ctx.createLinearGradient(0, 0, 0, gameCanvas.height);
+    grad.addColorStop(0, '#0a1628');
+    grad.addColorStop(0.4, '#0d2137');
+    grad.addColorStop(0.7, '#0a3d5c');
+    grad.addColorStop(1, '#0a4a6a');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+    ctx.fillStyle = 'rgba(30, 144, 200, 0.3)';
+    ctx.fillRect(0, 170, gameCanvas.width, 130);
+
+    ctx.strokeStyle = 'rgba(100, 200, 255, 0.2)';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        const offset = (Date.now() / 1000 + i * 20) % 100;
+        for (let x = 0; x < gameCanvas.width; x += 5) {
+            const y = 175 + Math.sin(x * 0.03 + offset * 0.05 + i) * 6;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    ctx.fillStyle = 'rgba(200, 230, 255, 0.15)';
+    ctx.beginPath();
+    ctx.moveTo(10, 170);
+    ctx.lineTo(80, 140);
+    ctx.lineTo(120, 155);
+    ctx.lineTo(150, 170);
+    ctx.fill();
+    ctx.font = '28px sans-serif';
+    ctx.fillText('🐧', 65, 158);
+
+    if (gameState.bobberVisible || gameState.isFishing) {
+        ctx.strokeStyle = 'rgba(200, 200, 200, 0.6)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 6]);
+        ctx.beginPath();
+        ctx.moveTo(70, 130);
+        ctx.lineTo(gameState.bobberX || 200, gameState.bobberY || 100);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        const bobX = gameState.bobberX || 200;
+        const bobY = gameState.bobberY || 100;
+        ctx.beginPath();
+        ctx.arc(bobX, bobY, 8, 0, Math.PI * 2);
+        ctx.fillStyle = '#e74c3c';
+        ctx.fill();
+        ctx.strokeStyle = '#c0392b';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(bobX, bobY + 3, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#f39c12';
+        ctx.fill();
+
+        for (let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            const r = 12 + i * 6 + Math.sin(Date.now() / 500 + i) * 2;
+            ctx.arc(bobX, bobY + 8, r, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(255,255,255,${0.1 - i * 0.03})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+    }
+
+    if (gameState.fishVisible) {
+        const fx = gameState.fishX;
+        const fy = gameState.fishY;
+        ctx.fillStyle = '#f1c40f';
+        ctx.shadowColor = 'rgba(241, 196, 15, 0.5)';
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.ellipse(fx, fy, gameState.fishSize, gameState.fishSize * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(fx + 8, fy - 4, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#1a2332';
+        ctx.beginPath();
+        ctx.arc(fx + 10, fy - 5, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#e67e22';
+        ctx.beginPath();
+        ctx.moveTo(fx - gameState.fishSize, fy);
+        ctx.lineTo(fx - gameState.fishSize - 12, fy - 10);
+        ctx.lineTo(fx - gameState.fishSize - 12, fy + 10);
+        ctx.closePath();
+        ctx.fill();
+        ctx.font = '12px sans-serif';
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'center';
+        ctx.fillText('🎣 کلیک کن!', fx, fy - 30);
+    }
+
+    ctx.font = '12px sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.textAlign = 'left';
+    ctx.fillText('🐟 ' + state.fish, 10, 25);
+    ctx.fillText('⚡ ' + state.energy, 10, 42);
+}
+
+function gameLoop() {
+    drawGame();
+    requestAnimationFrame(gameLoop);
+}
+gameLoop();
+
+mineBtn.addEventListener('click', startFishing);
+
+async function startFishing() {
+    if (gameState.isFishing || gameState.isWaiting) {
+        showToast('صبر کن تا ماهی‌گیری تموم بشه!', 'warning');
+        return;
+    }
+    if (state.energy < 1) {
+        showToast('انرژی کافی ندارید! صبر کنید تا شارژ شود.', 'error');
+        return;
+    }
+    await updateUserEnergy(-1);
+    gameState.isFishing = true;
+    gameState.bobberVisible = true;
+    gameState.bobberX = 70;
+    gameState.bobberY = 130;
+    gameState.targetX = 150 + Math.random() * 200;
+    gameState.targetY = 120 + Math.random() * 40;
+    mineStatus.textContent = '🎣 چوب به آب افتاد... صبر کن...';
+
+    let progress = 0;
+    const startX = 70;
+    const startY = 130;
+    const endX = gameState.targetX;
+    const endY = gameState.targetY;
+
+    const animInterval = setInterval(() => {
+        progress += 0.03;
+        if (progress >= 1) {
+            clearInterval(animInterval);
+            gameState.bobberX = endX;
+            gameState.bobberY = endY;
+            const waitTime = 3000 + Math.random() * 27000;
+            mineStatus.textContent = '⏳ منتظر ماهی...';
+            gameState.fishTimer = setTimeout(() => {
+                showFish();
+            }, waitTime);
+            return;
+        }
+        const ease = 1 - Math.pow(1 - progress, 3);
+        gameState.bobberX = startX + (endX - startX) * ease;
+        gameState.bobberY = startY + (endY - startY) * ease + Math.sin(progress * 10) * 3;
+    }, 16);
+}
+
+function showFish() {
+    gameState.fishVisible = true;
+    gameState.fishX = 150 + Math.random() * 180;
+    gameState.fishY = 180 + Math.random() * 60;
+    gameState.isWaiting = true;
+    mineStatus.textContent = '🐟 ماهی پیدا شد! سریع کلیک کن! (۳ ثانیه فرصت)';
+
+    gameState.clickTimer = setTimeout(() => {
+        if (gameState.fishVisible) {
+            gameState.fishVisible = false;
+            gameState.isWaiting = false;
+            gameState.isFishing = false;
+            gameState.bobberVisible = false;
+            mineStatus.textContent = '😔 ماهی رفت! دوباره امتحان کن.';
+            showToast('ماهی فرار کرد!', 'warning');
+        }
+    }, 3000);
+}
+
+gameCanvas.addEventListener('click', async (e) => {
+    if (!gameState.fishVisible || !gameState.isWaiting) return;
+    const rect = gameCanvas.getBoundingClientRect();
+    const scaleX = gameCanvas.width / rect.width;
+    const scaleY = gameCanvas.height / rect.height;
+    const clickX = (e.clientX - rect.left) * scaleX;
+    const clickY = (e.clientY - rect.top) * scaleY;
+
+    const dx = clickX - gameState.fishX;
+    const dy = clickY - gameState.fishY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < 50) {
+        clearTimeout(gameState.clickTimer);
+        gameState.fishVisible = false;
+        gameState.isWaiting = false;
+        gameState.isFishing = false;
+        gameState.bobberVisible = false;
+        await updateUserFish(1);
+        mineStatus.textContent = '🎉 ماهی گرفتی! +۱ ماهی';
+        showToast('🐟 یه ماهی گرفتی!', 'success');
+
+        if (state.fish >= CONFIG.fishToFeed) {
+            mineStatus.textContent += ' 🐧 پنگوئن گرسنه‌ست! بهش غذا بده.';
+            showToast('🐧 پنگوئن گرسنه است! بهش غذا بده.', 'warning');
+        }
+    }
+});
+
+feedPenguinBtn.addEventListener('click', async () => {
+    if (state.fish < CONFIG.fishToFeed) {
+        showToast('به ' + CONFIG.fishToFeed + ' ماهی نیاز داری!', 'error');
+        return;
+    }
+    if (state.energy >= CONFIG.energyMax) {
+        showToast('انرژی پنگوئن کامل است!', 'info');
+        return;
+    }
+    await updateUserFish(-CONFIG.fishToFeed);
+    await updateUserEnergy(CONFIG.feedCost);
+    mineStatus.textContent = '🐧 پنگوئن غذا خورد! انرژی +' + CONFIG.feedCost;
+    showToast('🐧 پنگوئن خوشحال شد! انرژی +' + CONFIG.feedCost, 'success');
+});
+
+          // ============================================
+        // CHARITY
+        // ============================================
+        donateBtn.addEventListener('click', async () => {
+            const amount = parseInt(donationAmount.value);
+            if (!amount || amount < 1) {
+                showToast('لطفاً مقدار معتبر وارد کنید', 'error');
+                return;
+            }
+            if (amount > state.tokens) {
+                showToast('توکن کافی ندارید!', 'error');
+                return;
+            }
+            const dollars = (amount / CONFIG.charityRate).toFixed(2);
+            if (!confirm(`آیا ${amount} توکن (معادل $${dollars}) به خیریه اهدا شود؟`)) return;
+
+            const success = await updateUserTokens(-amount);
+            if (!success) {
+                showToast('خطا در اهدا', 'error');
+                return;
+            }
+            const { error } = await supabase
+                .from('donations')
+                .insert({ user_id: state.user.id, amount: amount, dollars: dollars });
+            if (error) {
+                showToast('خطا در ثبت اهدا', 'error');
+                return;
+            }
+            showToast(`❤️ ${amount} توکن ($${dollars}) به خیریه اهدا شد`, 'success');
+            donationAmount.value = '';
+        });
+
+        // ============================================
+        // BANK
+        // ============================================
+        let selectedPlan = null;
+        document.querySelectorAll('.deposit-plan').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.deposit-plan').forEach(b => b.classList.remove('btn-primary'));
+                btn.classList.add('btn-primary');
+                btn.classList.remove('btn-outline');
+                selectedPlan = { days: parseInt(btn.dataset.days), rate: parseInt(btn.dataset.rate) };
+                depositInfo.textContent = `📊 ${selectedPlan.days} روز با ${selectedPlan.rate}% سود انتخاب شد`;
+            });
+        });
+
+        depositBtn.addEventListener('click', async () => {
+            const amount = parseInt(depositAmount.value);
+            if (!amount || amount < 1) {
+                showToast('لطفاً مقدار معتبر وارد کنید', 'error');
+                return;
+            }
+            if (!selectedPlan) {
+                showToast('لطفاً یک طرح سپرده انتخاب کنید', 'error');
+                return;
+            }
+            if (amount > state.tokens) {
+                showToast('توکن کافی ندارید!', 'error');
+                return;
+            }
+            if (!confirm(`${amount} توکن به مدت ${selectedPlan.days} روز با ${selectedPlan.rate}% سود سپرده شود؟`)) return;
+
+            const success = await updateUserTokens(-amount);
+            if (!success) {
+                showToast('خطا در سپرده‌گذاری', 'error');
+                return;
+            }
+            const startDate = new Date();
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() + selectedPlan.days);
+
+            const { error } = await supabase
+                .from('deposits')
+                .insert({
+                    user_id: state.user.id,
+                    amount: amount,
+                    duration: selectedPlan.days,
+                    interest_rate: selectedPlan.rate,
+                    start_date: startDate.toISOString(),
+                    end_date: endDate.toISOString(),
+                    status: 'active'
+                });
+            if (error) {
+                await updateUserTokens(amount);
+                showToast('خطا در ثبت سپرده', 'error');
+                return;
+            }
+            showToast(`💰 ${amount} توکن با ${selectedPlan.rate}% سود سپرده شد`, 'success');
+            depositAmount.value = '';
+            selectedPlan = null;
+            depositInfo.textContent = '';
+            document.querySelectorAll('.deposit-plan').forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-outline');
+            });
+        });
+
+        async function checkDeposits() {
+            if (!state.user) return;
+            const { data, error } = await supabase
+                .from('deposits')
+                .select('*')
+                .eq('user_id', state.user.id)
+                .eq('status', 'active');
+            if (error || !data) return;
+            const now = new Date();
+            for (const deposit of data) {
+                const endDate = new Date(deposit.end_date);
+                if (now >= endDate) {
+                    const interest = Math.floor(deposit.amount * deposit.interest_rate / 100);
+                    const total = deposit.amount + interest;
+                    await updateUserTokens(total);
+                    await supabase.from('deposits').update({ status: 'completed' }).eq('id', deposit.id);
+                    showToast(`💰 سپرده ${deposit.amount} توکن با ${interest} توکن سود (مجموع ${total}) تسویه شد!`, 'success');
+                }
+            }
+        }
+
+        // ============================================
+        // TRANSFER
+        // ============================================
+        transferBtn.addEventListener('click', async () => {
+            const cardNumber = transferCard.value.trim().replace(/\s/g, '');
+            const amount = parseInt(transferAmount.value);
+            if (!cardNumber || cardNumber.length !== 16 || !/^\d{16}$/.test(cardNumber)) {
+                showToast('شماره کارت ۱۶ رقمی معتبر وارد کنید', 'error');
+                return;
+            }
+            if (!amount || amount < 1) {
+                showToast('مقدار معتبر وارد کنید', 'error');
+                return;
+            }
+            if (amount > state.tokens) {
+                showToast('توکن کافی ندارید!', 'error');
+                return;
+            }
+            if (cardNumber === state.cardNumber) {
+                showToast('نمی‌توانید به خودتان انتقال دهید!', 'error');
+                return;
+            }
+
+            const { data: recipient, error } = await supabase
+                .from('users')
+                .select('id, username, tokens')
+                .eq('card_number', cardNumber)
+                .single();
+
+            if (error || !recipient) {
+                showToast('شماره کارت نامعتبر است', 'error');
+                return;
+            }
+            if (!confirm(`${amount} توکن به ${recipient.username} انتقال یابد؟`)) return;
+
+            const success = await updateUserTokens(-amount);
+            if (!success) {
+                showToast('خطا در انتقال', 'error');
+                return;
+            }
+            const { error: updateError } = await supabase
+                .from('users')
+                .update({ tokens: recipient.tokens + amount })
+                .eq('id', recipient.id);
+            if (updateError) {
+                await updateUserTokens(amount);
+                showToast('خطا در انتقال به گیرنده', 'error');
+                return;
+            }
+            await supabase
+                .from('transactions')
+                .insert({ from_user_id: state.user.id, to_user_id: recipient.id, amount: amount });
+            showToast(`✅ ${amount} توکن به ${recipient.username} منتقل شد`, 'success');
+            transferCard.value = '';
+            transferAmount.value = '';
+            loadHistory();
+        });
+
+        // ============================================
+        // HISTORY
+        // ============================================
+        async function loadHistory() {
+            if (!state.user) return;
+            const { data, error } = await supabase
+                .from('transactions')
+                .select(`*, from_user:from_user_id(username), to_user:to_user_id(username)`)
+                .or(`from_user_id.eq.${state.user.id},to_user_id.eq.${state.user.id}`)
+                .order('created_at', { ascending: false })
+                .limit(50);
+
+            if (error || !data || data.length === 0) {
+                historyList.innerHTML = '<p style="color: var(--text-secondary); font-size: 13px;">هیچ تراکنشی ثبت نشده است</p>';
+                return;
+            }
+
+            let html = '';
+            for (const tx of data) {
+                const isSent = tx.from_user_id === state.user.id;
+                const otherName = isSent ? tx.to_user?.username || 'کاربر' : tx.from_user?.username || 'کاربر';
+                const sign = isSent ? '-' : '+';
+                const color = isSent ? 'var(--accent-red)' : 'var(--accent-green)';
+                const label = isSent ? `به ${otherName}` : `از ${otherName}`;
+                const date = new Date(tx.created_at).toLocaleDateString('fa-IR');
+                html += `
+                    <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(74,144,226,0.1);">
+                        <span style="font-size: 13px;">${label}</span>
+                        <span style="font-weight: 600; color: ${color};">${sign}${tx.amount} 🪙</span>
+                        <span style="font-size: 11px; color: var(--text-secondary);">${date}</span>
+                    </div>
+                `;
+            }
+            historyList.innerHTML = html;
+        }
+
+        // ============================================
+        // PERIODIC CHECKS
+        // ============================================
+        setInterval(() => {
+            checkDeposits();
+            loadHistory();
+        }, 60000);
+
+        // ============================================
+        // KEYBOARD SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === '1') showSection('chat');
+            if (e.ctrlKey && e.key === '2') showSection('mine');
+            if (e.ctrlKey && e.key === '3') showSection('charity');
+            if (e.ctrlKey && e.key === '4') showSection('bank');
+            if (e.ctrlKey && e.key === '5') showSection('transfer');
+            if (e.ctrlKey && e.key === '6') showSection('history');
+        });
+
+        console.log('🐧 Abyss AI - پنگوئن ابیس');
+        console.log('💡 کلیدهای میانبر: Ctrl+1 چت, Ctrl+2 ماین, Ctrl+3 خیریه, Ctrl+4 بانک, Ctrl+5 انتقال, Ctrl+6 تاریخچه');
+    </script>
+</body>
+</html>
