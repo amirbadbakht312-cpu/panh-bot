@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🐧 Abyss AI - ماهی‌گیری</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            padding: 10px;
+            image-rendering: pixelated;
+        }
+        .game-wrapper {
+            max-width: 550px;
+            width: 100%;
+            background: #16213e;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+            border: 2px solid #0f3460;
+        }
+        .title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #e0e0e0;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .title span { color: #4fc3f7; }
+
+        /* ===== صحنه بازی (ایزومتریک) ===== */
+        .scene {
+            width: 100%;
+            height: 380px;
+            background: #2d4a22;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #0f3460;
+            cursor: pointer;
+            image-rendering: pixelated;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.4);
+        }
+        /* همه چیز پیکسلی */
+        .scene * {
+            image-rendering: pixelated;
+        }
+
+        /* ===== آسمان ===== */
+        .sky {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(180deg, #1a3a5c, #4a8db7);
+            border-radius: 0 0 50% 50% / 0 0 20px 20px;
+        }
+        /* خورشید پیکسلی */
+        .sun {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            width: 32px;
+            height: 32px;
+            background: #f7dc6f;
+            border-radius: 4px;
+            box-shadow: 0 0 30px rgba(247,220,111,0.3);
+            clip-path: polygon(
+                50% 0%, 61% 25%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 25%
+            );
+        }
+        /* ابر پیکسلی */
+        .cloud {
+            position: absolute;
+            font-size: 0;
+            color: rgba(255,255,255,0.2);
+            letter-spacing: 4px;
+        }
+        .cloud::before {
+            content: '■ ■ ■ ■ ■';
+            font-size: 14px;
+            color: rgba(255,255,255,0.15);
+            letter-spacing: 6px;
+        }
+        .cloud-1 { top: 20px; left: 20px; }
+        .cloud-2 { top: 35px; left: 120px; }
+        .cloud-3 { top: 15px; right: 80px; }
+
+        /* ===== کوه‌های پیکسلی ===== */
+        .mountain {
+            position: absolute;
+            bottom: 130px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+        .mountain1 {
+            left: -20px;
+            border-width: 0 120px 80px 120px;
+            border-color: transparent transparent #2c3e50 transparent;
+        }
+        .mountain2 {
+            left: 140px;
+            border-width: 0 140px 100px 140px;
+            border-color: transparent transparent #34495e transparent;
+        }
+        .mountain3 {
+            right: -20px;
+            border-width: 0 110px 70px 110px;
+            border-color: transparent transparent #2c3e50 transparent;
+        }
+        .mountain-snow1 {
+            left: 10px;
+            border-width: 0 80px 35px 80px;
+            border-color: transparent transparent #bdc3c7 transparent;
+        }
+        .mountain-snow2 {
+            left: 170px;
+            border-width: 0 90px 40px 90px;
+            border-color: transparent transparent #bdc3c7 transparent;
+        }
+        .mountain-snow3 {
+            right: 10px;
+            border-width: 0 70px 30px 70px;
+            border-color: transparent transparent #bdc3c7 transparent;
+        }
+
+        /* ===== زمین ایزومتریک ===== */
+        .ground {
+            position: absolute;
+            bottom: 110px;
+            left: 0;
+            right: 0;
+            height: 30px;
+            background: #4a7c3f;
+            clip-path: polygon(0% 0%, 100% 0%, 95% 100%, 5% 100%);
+        }
+        /* چمن */
+        .grass-tiles {
+            position: absolute;
+            bottom: 110px;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: repeating-linear-gradient(
+                45deg,
+                #3d6b34 0px, #3d6b34 4px,
+                #4a7c3f 4px, #4a7c3f 8px
+            );
+            opacity: 0.6;
+        }
+
+        /* ===== رودخانه ایزومتریک ===== */
+        .river {
+            position: absolute;
+            bottom: 0;
+            left: 5%;
+            right: 5%;
+            height: 110px;
+            background: linear-gradient(180deg, #1a6b8a, #0d4a6a);
+            clip-path: polygon(0% 0%, 100% 0%, 92% 100%, 8% 100%);
+            box-shadow: inset 0 -10px 30px rgba(0,0,0,0.4);
+        }
+        /* موج‌های پیکسلی */
+        .wave-pixel {
+            position: absolute;
+            color: rgba(255,255,255,0.08);
+            font-size: 0;
+            letter-spacing: 3px;
+            pointer-events: none;
+        }
+        .wave-pixel::before {
+            content: '▄ ▄ ▄ ▄ ▄';
+            font-size: 12px;
+            color: rgba(255,255,255,0.1);
+            letter-spacing: 8px;
+        }
+        .wave1 { bottom: 65%; left: 10%; animation: waveMove 3s infinite; }
+        .wave2 { bottom: 72%; left: 40%; animation: waveMove 3.5s infinite 0.5s; }
+        .wave3 { bottom: 68%; right: 15%; animation: waveMove 2.8s infinite 1s; }
+        @keyframes waveMove {
+            0%,100% { transform: translateX(0); }
+            50% { transform: translateX(12px); }
+        }
+
+        /* ===== درخت‌های پیکسلی ===== */
+        .tree-pixel {
+            position: absolute;
+            bottom: 110px;
+            image-rendering: pixelated;
+        }
+        .tree-pixel .trunk {
+            width: 4px;
+            height: 16px;
+            background: #6d4c2a;
+            margin: 0 auto;
+            box-shadow: 0 0 0 1px #4a3520;
+        }
+        .tree-pixel .leaves {
+            width: 24px;
+            height: 24px;
+            background: #2d7d3a;
+            margin: 0 auto -8px auto;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            box-shadow: 0 0 0 1px #1d5d2a;
+        }
+        .tree-pixel .leaves2 {
+            width: 18px;
+            height: 18px;
+            background: #3a8d4a;
+            margin: -14px auto 0 4px;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            box-shadow: 0 0 0 1px #2a7d3a;
+        }
+        .tree1 { left: 8%; }
+        .tree2 { right: 6%; bottom: 105px; }
+        .tree3 { left: 45%; bottom: 100px; transform: scale(0.8); }
+
+        /* ===== خط ساحلی ===== */
+        .shore {
+            position: absolute;
+            bottom: 110px;
+            left: 2%;
+            right: 2%;
+            height: 6px;
+            background: #b8956a;
+            clip-path: polygon(0% 0%, 100% 0%, 95% 100%, 5% 100%);
+            opacity: 0.5;
+        }
+
+        /* ===== شخصیت‌ها (پیکسلی) ===== */
+        .penguin-pixel {
+            position: absolute;
+            bottom: 80px;
+            left: 25px;
+            width: 32px;
+            height: 40px;
+            z-index: 10;
+            transition: all 0.2s;
+            image-rendering: pixelated;
+            pointer-events: none;
+        }
+        /* بدن پنگوئن پیکسلی */
+        .penguin-body {
+            width: 24px;
+            height: 30px;
+            background: #1a1a2e;
+            margin: 0 auto;
+            border-radius: 2px;
+            position: relative;
+            box-shadow: 0 0 0 1px #0a0a1a;
+        }
+        .penguin-body::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            width: 16px;
+            height: 18px;
+            background: #e8e8e8;
+            border-radius: 1px;
+            box-shadow: 0 0 0 1px #d0d0d0;
+        }
+        .penguin-head {
+            width: 20px;
+            height: 16px;
+            background: #1a1a2e;
+            margin: -4px auto 0;
+            border-radius: 2px 2px 0 0;
+            position: relative;
+            box-shadow: 0 0 0 1px #0a0a1a;
+        }
+        .penguin-head::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            left: 2px;
+            width: 16px;
+            height: 10px;
+            background: #e8e8e8;
+            border-radius: 1px;
+            box-shadow: 0 0 0 1px #d0d0d0;
+        }
+        /* چشم‌ها */
+        .eye {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            top: 4px;
+            border-radius: 1px;
+            box-shadow: 0 0 0 1px #0a0a1a;
+        }
+        .eye-l { left: 3px; }
+        .eye-r { right: 3px; }
+        .eye::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #1a1a2e;
+            top: 1px;
+            left: 1px;
+        }
+        /* منقار */
+        .beak {
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 4px;
+            background: #e67e22;
+            clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+            box-shadow: 0 0 0 1px #c96a1a;
+        }
+        /* پاها */
+        .feet {
+            display: flex;
+            justify-content: space-between;
+            width: 20px;
+            margin: -2px auto 0;
+        }
+        .foot {
+            width: 6px;
+            height: 4px;
+            background: #e67e22;
+            border-radius: 0 0 2px 2px;
+            box-shadow: 0 0 0 1px #c96a1a;
+        }
+
+        /* ===== ماهی پیکسلی ===== */
+        .fish-pixel {
+            position: absolute;
+            display: none;
+            z-index: 20;
+            font-size: 0;
+            pointer-events: none;
+            image-rendering: pixelated;
+        }
+        .fish-pixel .fish-body {
+            width: 32px;
+            height: 16px;
+            background: #f1c40f;
+            border-radius: 2px;
+            position: relative;
+            box-shadow: 0 0 0 1px #d4a800;
+        }
+        .fish-pixel .fish-body::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -2px;
+            width: 10px;
+            height: 20px;
+            background: #f1c40f;
+            clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+            box-shadow: 0 0 0 1px #d4a800;
+        }
+        .fish-eye {
+            position: absolute;
+            right: 6px;
+            top: 4px;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 1px;
+            box-shadow: 0 0 0 1px #0a0a1a;
+        }
+        .fish-eye::after {
+            content: '';
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #1a1a2e;
+            top: 1px;
+            left: 1px;
+        }
+        /* رنگ‌های مختلف ماهی */
+        .fish-gold .fish-body { background: #f1c40f; }
+        .fish-gold .fish-body::after { background: #f1c40f; }
+        .fish-red .fish-body { background: #e74c3c; }
+        .fish-red .fish-body::after { background: #e74c3c; }
+        .fish-blue .fish-body { background: #3498db; }
+        .fish-blue .fish-body::after { background: #3498db; }
+        .fish-green .fish-body { background: #2ecc71; }
+        .fish-green .fish-body::after { background: #2ecc71; }
+
+        /* ===== چوب‌پران پیکسلی ===== */
+        .bobber-pixel {
+            position: absolute;
+            display: none;
+            z-index: 15;
+            font-size: 0;
+            pointer-events: none;
+            animation: bobberFloat 1s ease-in-out infinite;
+        }
+        .bobber-pixel .bobber-body {
+            width: 12px;
+            height: 12px;
+            background: #e74c3c;
+            border-radius: 2px;
+            box-shadow: 0 0 0 1px #c0392b;
+        }
+        .bobber-pixel .bobber-body::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 8px;
+            height: 4px;
+            background: white;
+            border-radius: 1px;
+            box-shadow: 0 0 0 1px #d0d0d0;
+        }
+        @keyframes bobberFloat {
+            0%,100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        /* ===== علامت تعجب پیکسلی ===== */
+        .exclamation-pixel {
+            position: absolute;
+            display: none;
+            z-index: 30;
+            font-size: 0;
+            pointer-events: none;
+            animation: exclamationPop 0.3s ease;
+        }
+        .exclamation-pixel .exclamation-body {
+            color: #e74c3c;
+            font-size: 28px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(231,76,60,0.5);
+        }
+        @keyframes exclamationPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        /* ===== ماهی صید شده ===== */
+        .caught-pixel {
+            position: absolute;
+            display: none;
+            left: 50%;
+            top: 10%;
+            transform: translateX(-50%) scale(0);
+            z-index: 40;
+            font-size: 0;
+            pointer-events: none;
+        }
+        .caught-pixel .caught-body {
+            width: 40px;
+            height: 20px;
+            background: #f1c40f;
+            border-radius: 2px;
+            position: relative;
+            box-shadow: 0 0 0 2px #d4a800;
+            animation: catchPop 0.5s ease forwards;
+        }
+        .caught-pixel .caught-body::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: -2px;
+            width: 12px;
+            height: 24px;
+            background: #f1c40f;
+            clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+            box-shadow: 0 0 0 2px #d4a800;
+        }
+        @keyframes catchPop {
+            0% { transform: translateX(-50%) scale(0); opacity: 0; }
+            50% { transform: translateX(-50%) scale(1.5); opacity: 1; }
+            70% { transform: translateX(-50%) scale(1.2); }
+            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+
+        /* ===== خط ماهی‌گیری ===== */
+        .fishing-line-pixel {
+            position: absolute;
+            width: 2px;
+            background: rgba(255,255,255,0.2);
+            display: none;
+            z-index: 5;
+            transform-origin: top left;
+            pointer-events: none;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.05);
+        }
+
+        /* ===== UI ===== */
+        .status {
+            padding: 10px 14px;
+            background: #0a0e1a;
+            border-radius: 8px;
+            margin: 10px 0;
+            min-height: 42px;
+            font-size: 13px;
+            color: #c8d8e0;
+            text-align: center;
+            border: 1px solid #0f3460;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 0.5px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 8px 0;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+        .stats .fish-stat { color: #4fc3f7; }
+        .stats .energy-stat { color: #f7dc6f; }
+        .energy-bar {
+            width: 100%;
+            height: 10px;
+            background: #0a0e1a;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 6px 0;
+            border: 1px solid #0f3460;
+        }
+        .energy-bar-fill {
+            height: 100%;
+            width: 100%;
+            background: #4fc3f7;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn-fish {
+            background: #0f3460;
+            color: #4fc3f7;
+            border: 1px solid #4fc3f7;
+        }
+        .btn-fish:hover { background: #1a4a7a; }
+        .btn-feed {
+            background: #2d2d2d;
+            color: #f7dc6f;
+            border: 1px solid #f7dc6f;
+        }
+        .btn-feed:hover { background: #3d3d3d; }
+        .hint {
+            text-align: center;
+            font-size: 11px;
+            color: #4a5a6a;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-wrapper">
+        <div class="title">🐧 <span>ABYSS</span> AI</div>
+
+        <!-- ===== صحنه بازی ===== -->
+        <div class="scene" id="scene">
+            <!-- آسمان -->
+            <div class="sky"></div>
+            <div class="sun"></div>
+            <div class="cloud cloud-1"></div>
+            <div class="cloud cloud-2"></div>
+            <div class="cloud cloud-3"></div>
+
+            <!-- کوه‌ها -->
+            <div class="mountain mountain1"></div>
+            <div class="mountain mountain2"></div>
+            <div class="mountain mountain3"></div>
+            <div class="mountain mountain-snow1"></div>
+            <div class="mountain mountain-snow2"></div>
+            <div class="mountain mountain-snow3"></div>
+
+            <!-- زمین -->
+            <div class="ground"></div>
+            <div class="grass-tiles"></div>
+            <div class="shore"></div>
+
+            <!-- رودخانه -->
+            <div class="river"></div>
+            <div class="wave-pixel wave1"></div>
+            <div class="wave-pixel wave2"></div>
+            <div class="wave-pixel wave3"></div>
+
+            <!-- درخت‌ها -->
+            <div class="tree-pixel tree1">
+                <div class="leaves"></div>
+                <div class="leaves2"></div>
+                <div class="trunk"></div>
+            </div>
+            <div class="tree-pixel tree2">
+                <div class="leaves"></div>
+                <div class="leaves2"></div>
+                <div class="trunk"></div>
+            </div>
+            <div class="tree-pixel tree3">
+                <div class="leaves"></div>
+                <div class="leaves2"></div>
+                <div class="trunk"></div>
+            </div>
+
+            <!-- خط ماهی‌گیری -->
+            <div class="fishing-line-pixel" id="fishingLine"></div>
+
+            <!-- چوب‌پران -->
+            <div class="bobber-pixel" id="bobber">
+                <div class="bobber-body"></div>
+            </div>
+
+            <!-- پنگوئن پیکسلی -->
+            <div class="penguin-pixel" id="penguin">
+                <div class="penguin-head">
+                    <div class="eye eye-l"></div>
+                    <div class="eye eye-r"></div>
+                    <div class="beak"></div>
+                </div>
+                <div class="penguin-body"></div>
+                <div class="feet">
+                    <div class="foot"></div>
+                    <div class="foot"></div>
+                </div>
+            </div>
+
+            <!-- علامت تعجب -->
+            <div class="exclamation-pixel" id="exclamation">
+                <div class="exclamation-body">❗</div>
+            </div>
+
+            <!-- ماهی -->
+            <div class="fish-pixel fish-gold" id="fish">
+                <div class="fish-body">
+                    <div class="fish-eye"></div>
+                </div>
+            </div>
+
+            <!-- ماهی صید شده -->
+            <div class="caught-pixel" id="caughtFish">
+                <div class="caught-body">
+                    <div class="fish-eye" style="right:8px;top:6px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== UI ===== -->
+        <div class="status" id="status">🎣 برای شروع ماهی‌گیری، دکمه رو بزن!</div>
+
+        <div class="stats">
+            <span class="fish-stat">🐟 <span id="fishCount">0</span></span>
+            <span class="energy-stat">⚡ <span id="energyDisplay">10</span>/10</span>
+        </div>
+
+        <div class="energy-bar">
+            <div class="energy-bar-fill" id="energyBar" style="width:100%;"></div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn btn-fish" id="fishBtn">🎣 چوب بینداز!</button>
+            <button class="btn btn-feed" id="feedBtn">🐧 غذا دادن</button>
+        </div>
+
+        <div class="hint">👆 روی رودخانه کلیک کن تا ماهی بگیری!</div>
+    </div>
+
+    <script>
+        // ============================================
+        // Abyss AI - بازی ماهی‌گیری (پیکسلی)
+        // ============================================
+
+        // ===== عناصر DOM =====
+        const scene = document.getElementById('scene');
+        const penguin = document.getElementById('penguin');
+        const fish = document.getElementById('fish');
+        const bobber = document.getElementById('bobber');
+        const exclamation = document.getElementById('exclamation');
+        const caughtFish = document.getElementById('caughtFish');
+        const fishingLine = document.getElementById('fishingLine');
+        const status = document.getElementById('status');
+        const fishCountEl = document.getElementById('fishCount');
+        const energyDisplay = document.getElementById('energyDisplay');
+        const energyBar = document.getElementById('energyBar');
+        const fishBtn = document.getElementById('fishBtn');
+        const feedBtn = document.getElementById('feedBtn');
+
+        // ===== وضعیت بازی =====
+        let fishCount = 0;
+        let energy = 10;
+        const maxEnergy = 10;
+        let isFishing = false;
+        let isWaiting = false;
+        let fishVisible = false;
+        let fishCaught = false;
+        let fishX = 0, fishY = 0;
+        let fishTimer = null;
+        let clickTimer = null;
+
+        // ===== رنگ‌های ماهی =====
+        const fishColors = ['fish-gold', 'fish-red', 'fish-blue', 'fish-green'];
+
+        // ===== به‌روزرسانی UI =====
+        function updateUI() {
+            fishCountEl.textContent = fishCount;
+            energyDisplay.textContent = energy;
+            const pct = (energy / maxEnergy) * 100;
+            energyBar.style.width = pct + '%';
+            if (pct > 50) energyBar.style.background = '#4fc3f7';
+            else if (pct > 25) energyBar.style.background = '#f7dc6f';
+            else energyBar.style.background = '#e74c3c';
+        }
+
+        // ===== شروع ماهی‌گیری =====
+        function startFishing() {
+            if (isFishing || isWaiting) {
+                status.textContent = '⏳ صبر کن!';
+                status.style.color = '#f39c12';
+                return;
+            }
+            if (energy < 1) {
+                status.textContent = '❌ انرژی کافی نیست!';
+                status.style.color = '#e74c3c';
+                return;
+            }
+
+            energy--;
+            updateUI();
+            isFishing = true;
+            status.textContent = '🎣 چوب به آب افتاد...';
+            status.style.color = '#4fc3f7';
+
+            // نمایش چوب‌پران
+            bobber.style.display = 'block';
+            bobber.style.left = (20 + Math.random() * 60) + '%';
+            bobber.style.top = (55 + Math.random() * 25) + '%';
+
+            // نمایش خط
+            fishingLine.style.display = 'block';
+            fishingLine.style.left = '18%';
+            fishingLine.style.top = '35%';
+            fishingLine.style.height = '70px';
+            fishingLine.style.transform = 'rotate(15deg)';
+
+            // پنگوئن حرکت میکنه
+            penguin.style.transform = 'rotate(-10deg)';
+
+            // زمان انتظار
+            const waitTime = 3000 + Math.random() * 5000;
+            fishTimer = setTimeout(showFish, waitTime);
+        }
+
+        // ===== نمایش ماهی =====
+        function showFish() {
+            isFishing = false;
+            isWaiting = true;
+            fishVisible = true;
+
+            // رنگ تصادفی
+            const colorClass = fishColors[Math.floor(Math.random() * fishColors.length)];
+            fish.className = 'fish-pixel ' + colorClass;
+
+            // موقعیت ماهی
+            fishX = 20 + Math.random() * 60;
+            fishY = 58 + Math.random() * 25;
+            fish.style.left = fishX + '%';
+            fish.style.top = fishY + '%';
+            fish.style.display = 'block';
+
+            // علامت تعجب
+            exclamation.style.display = 'block';
+            exclamation.style.left = '10%';
+            exclamation.style.top = '15%';
+
+            // پنگوئن برگشت
+            penguin.style.transform = 'rotate(0deg)';
+
+            status.textContent = '🐟 ماهی پیدا شد! کلیک کن! (۳ ثانیه)';
+            status.style.color = '#4fc3f7';
+
+            // تایمر فرار
+            clickTimer = setTimeout(fishEscaped, 3000);
+        }
+
+        // ===== گرفتن ماهی =====
+        function catchFish() {
+            if (!isWaiting || !fishVisible) return;
+
+            clearTimeout(clickTimer);
+            isWaiting = false;
+            fishVisible = false;
+            fishCaught = true;
+
+            fish.style.display = 'none';
+            exclamation.style.display = 'none';
+            bobber.style.display = 'none';
+            fishingLine.style.display = 'none';
+
+            // نمایش ماهی صید شده
+            caughtFish.style.display = 'block';
+            caughtFish.style.animation = 'none';
+            void caughtFish.offsetWidth;
+            caughtFish.style.animation = 'catchPop 0.5s ease forwards';
+
+            fishCount++;
+            updateUI();
+            status.textContent = '🎉 ماهی گرفتی! +۱ 🐟';
+            status.style.color = '#4fc3f7';
+            isFishing = false;
+
+            // پنگوئن خوشحال
+            penguin.style.transform = 'translateY(-8px)';
+            setTimeout(() => {
+                penguin.style.transform = 'translateY(0)';
+            }, 300);
+
+            setTimeout(() => {
+                caughtFish.style.display = 'none';
+            }, 1500);
+        }
+
+        // ===== ماهی فرار کرد =====
+        function fishEscaped() {
+            if (fishCaught) return;
+            isWaiting = false;
+            fishVisible = false;
+            fish.style.display = 'none';
+            exclamation.style.display = 'none';
+            bobber.style.display = 'none';
+            fishingLine.style.display = 'none';
+            status.textContent = '😔 ماهی فرار کرد! دوباره امتحان کن.';
+            status.style.color = '#e67e22';
+            isFishing = false;
+        }
+
+        // ===== غذا دادن =====
+        function feedPenguin() {
+            if (fishCount < 10) {
+                status.textContent = `❌ به ۱۰ ماهی نیاز داری! (داری ${fishCount})`;
+                status.style.color = '#e74c3c';
+                return;
+            }
+            if (energy >= maxEnergy) {
+                status.textContent = '✅ انرژی کامل است!';
+                status.style.color = '#4fc3f7';
+                return;
+            }
+
+            fishCount -= 10;
+            energy = Math.min(energy + 5, maxEnergy);
+            updateUI();
+            status.textContent = '🐧 پنگوئن خوشحال شد! +۵ انرژی ❤️';
+            status.style.color = '#f7dc6f';
+
+            penguin.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                penguin.style.transform = 'translateY(0)';
+            }, 400);
+        }
+
+        // ===== کلیک روی صحنه =====
+        scene.addEventListener('click', function(e) {
+            if (!isWaiting || !fishVisible) return;
+
+            const rect = this.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+            const dist = Math.sqrt(Math.pow(x - fishX, 2) + Math.pow(y - fishY, 2));
+
+            if (dist < 12) {
+                catchFish();
+            } else {
+                status.textContent = '👆 نزدیک‌تر به ماهی کلیک کن!';
+                status.style.color = '#f39c12';
+                setTimeout(() => {
+                    if (isWaiting) {
+                        status.textContent = '🐟 ماهی پیدا شد! کلیک کن! (۳ ثانیه)';
+                        status.style.color = '#4fc3f7';
+                    }
+                }, 1000);
+            }
+        });
+
+        // ===== دکمه‌ها =====
+        fishBtn.addEventListener('click', startFishing);
+        feedBtn.addEventListener('click', feedPenguin);
+
+        // ===== کیبورد =====
+        document.addEventListener('keydown', function(e) {
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                startFishing();
+            }
+            if (e.key === 'f' || e.key === 'F') {
+                feedPenguin();
+            }
+        });
+
+        // ===== شروع =====
+        updateUI();
+        console.log('🐧 Abyss AI - بازی ماهی‌گیری پیکسلی راه‌اندازی شد!');
+    </script>
+</body>
+</html>
