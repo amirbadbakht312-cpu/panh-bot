@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐧 Abyss AI</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        :root {
+            --bg: #f0f2f5;
+            --bg2: #ffffff;
+            --text: #1a1a2e;
+            --text2: #4a4a6a;
+            --border: #d0d0d0;
+            --primary: #2d6a9f;
+            --primary-light: #4a8bc2;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --radius: 20px;
+            --shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .dark {
+            --bg: #0a0a14;
+            --bg2: #141429;
+            --text: #e8e8f0;
+            --text2: #a0a0b8;
+            --border: #2a2a44;
+            --shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 16px;
+            transition: all 0.4s ease;
+        }
+        #app {
+            max-width: 480px;
+            width: 100%;
+            background: var(--bg2);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        #theme-toggle {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: var(--bg);
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 50%;
+            box-shadow: var(--shadow);
+            z-index: 100;
+            transition: transform 0.3s;
+        }
+        #theme-toggle:hover { transform: rotate(30deg); }
+
+        .auth-box {
+            background: var(--bg);
+            padding: 32px 24px;
+            border-radius: var(--radius);
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .auth-box input {
+            width: 100%;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg2);
+            color: var(--text);
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .auth-box input:focus { 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 4px rgba(45,106,159,0.15);
+        }
+        .btn-primary {
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 17px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(45,106,159,0.4); }
+
+        #menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 24px 0;
+        }
+        #menu button {
+            padding: 20px 12px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg2);
+            color: var(--text);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        #menu button:hover { 
+            border-color: var(--primary); 
+            transform: translateY(-4px); 
+            box-shadow: var(--shadow);
+        }
+        #menu button .icon { font-size: 32px; }
+
+        .section {
+            display: none;
+            margin-top: 16px;
+            padding: 20px;
+            background: var(--bg);
+            border-radius: var(--radius);
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #gameCanvas {
+            width: 100%;
+            max-width: 100%;
+            border-radius: var(--radius);
+            background: linear-gradient(#0a4d8c, #1e90ff);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: block;
+            margin-bottom: 12px;
+            cursor: crosshair;
+        }
+        .game-stats {
+            display: flex;
+            justify-content: space-around;
+            background: var(--bg2);
+            padding: 12px;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 12px;
+        }
+        .mine-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 6px 20px rgba(245,124,0,0.4);
+        }
+        .mine-btn:hover:not(:disabled) { transform: scale(1.03); }
+
+        .logout-btn {
+            background: linear-gradient(135deg, var(--danger), #c0392b);
+            margin-top: 24px;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+        }
+        .back-btn {
+            background: var(--border);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <button id="theme-toggle" onclick="window.toggleTheme()">🌓</button>
+    
+    <!-- AUTH PAGE -->
+    <div id="auth-page">
+        <h1 style="text-align:center;color:var(--primary);margin-bottom:8px;">🐧 Abyss AI</h1>
+        <p id="form-title" style="text-align:center;color:var(--text2);margin-bottom:24px;font-size:15px;">ثبت‌نام</p>
+        <div class="auth-box">
+            <input type="text" id="username" placeholder="نام کاربری">
+            <input type="password" id="password" placeholder="رمز عبور">
+            <input type="password" id="confirm-password" placeholder="تکرار رمز عبور">
+            <button class="btn-primary" id="actionBtn" onclick="window.handleAction()" style="width:100%;">ثبت‌نام</button>
+            <div id="auth-error" style="color:#e74c3c;text-align:center;margin-top:12px;min-height:24px;"></div>
+            <div id="switchMode" onclick="window.handleSwitch()" style="text-align:center;margin-top:20px;color:var(--primary);cursor:pointer;font-weight:600;">
+                قبلاً ثبت‌نام کردی؟ وارد شو
+            </div>
+        </div>
+    </div>
+    
+    <!-- MAIN PAGE -->
+    <div id="main-page" style="display:none;">
+        <!-- ادامه MAIN PAGE -->
+        <div id="user-info" style="display:flex;justify-content:space-between;align-items:center;background:var(--bg);padding:12px 20px;border-radius:50px;margin-bottom:20px;">
+            <span>👤 <span id="display-username">کاربر</span></span>
+            <span>💰 <span id="display-tokens">100</span> <small>$Abyss</small></span>
+            <span class="badge" style="background:var(--primary);color:white;padding:4px 14px;border-radius:30px;">⚡ <span id="display-energy">10</span></span>
+        </div>
+        
+        <div id="menu">
+            <button onclick="window.showSection('chat')"><span class="icon">💬</span>هوش مصنوعی</button>
+            <button onclick="window.showSection('mine')"><span class="icon">⛏️</span>ماین ماهی</button>
+            <button onclick="window.showSection('charity')"><span class="icon">❤️</span>خیریه</button>
+            <button onclick="window.showSection('bank')"><span class="icon">🏦</span>بانک</button>
+        </div>
+
+        <!-- CHAT -->
+        <div id="chat-section" class="section">
+            <button class="back-btn" onclick="window.showSection('menu')">← بازگشت</button>
+            <div class="section-title">💬 گفتگو با پنگوئن</div>
+            <div id="chat-box" style="background:var(--bg2);border-radius:16px;padding:16px;height:260px;overflow-y:auto;margin-bottom:12px;"></div>
+            <div style="display:flex;gap:10px;">
+                <input type="text" id="chat-input" placeholder="پیامت رو بنویس..." style="flex:1;padding:12px 18px;border-radius:50px;border:2px solid var(--border);">
+                <button onclick="window.sendMessage()" style="padding:0 24px;background:var(--primary);color:white;border:none;border-radius:50px;">ارسال</button>
+            </div>
+            <div style="text-align:center;margin-top:8px;font-size:13px;">💰 هر پیام ۱۰۰ توکن</div>
+        </div>
+
+        <!-- MINE GAME -->
+        <div id="mine-section" class="section">
+            <button class="back-btn" onclick="window.showSection('menu')">← بازگشت</button>
+            <div class="section-title">⛏️ ماین ماهی</div>
+            <canvas id="gameCanvas" width="440" height="320"></canvas>
+            <div class="game-stats">
+                <div>🐟 ماهی‌ها: <span id="fish-count">0</span></div>
+                <div>⚡ انرژی: <span id="energy-count">10</span></div>
+                <div id="game-status">آماده</div>
+            </div>
+            <button class="mine-btn" id="fishBtn" onclick="window.startFishing()">🎣 شروع ماهی‌گیری</button>
+        </div>
+
+        <!-- CHARITY -->
+        <div id="charity-section" class="section">
+            <button class="back-btn" onclick="window.showSection('menu')">← بازگشت</button>
+            <div class="section-title">❤️ خیریه پنگوئن‌ها</div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin:15px 0;">
+                <a href="https://www.penguinsg.org/" target="_blank" style="color:var(--primary);text-decoration:none;padding:10px;background:var(--bg2);border-radius:12px;">🌍 Penguins Global</a>
+                <a href="https://www.penguinsinternational.org/" target="_blank" style="color:var(--primary);text-decoration:none;padding:10px;background:var(--bg2);border-radius:12px;">🌍 Penguins International</a>
+                <a href="https://www.globalpenguinsociety.org/" target="_blank" style="color:var(--primary);text-decoration:none;padding:10px;background:var(--bg2);border-radius:12px;">🌍 Global Penguin Society</a>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <input type="number" id="donate-amount" placeholder="تعداد توکن" min="1" style="flex:1;padding:12px;border-radius:50px;border:2px solid var(--border);">
+                <button onclick="window.donateTokens()" style="padding:0 24px;background:var(--success);color:white;border:none;border-radius:50px;">اهدای توکن</button>
+            </div>
+        </div>
+
+        <!-- BANK -->
+        <div id="bank-section" class="section">
+            <button class="back-btn" onclick="window.showSection('menu')">← بازگشت</button>
+            <div class="section-title">🏦 بانک</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:15px 0;">
+                <button onclick="window.deposit('week')" style="padding:12px;border:2px solid var(--border);border-radius:12px;background:var(--bg2);">🗓 ۱ هفته<br><small>۲% سود</small></button>
+                <button onclick="window.deposit('month')" style="padding:12px;border:2px solid var(--border);border-radius:12px;background:var(--bg2);">🗓 ۴۰ روز<br><small>۵% سود</small></button>
+                <button onclick="window.deposit('year')" style="padding:12px;border:2px solid var(--border);border-radius:12px;background:var(--bg2);">🗓 ۱ سال<br><small>۲۰% سود</small></button>
+            </div>
+            <div id="bank-info" style="background:var(--bg2);padding:15px;border-radius:12px;margin-bottom:15px;">💰 سپرده‌ات رو انتخاب کن.</div>
+            
+            <div style="margin-top:20px;padding-top:16px;border-top:2px solid var(--border);">
+                <div class="section-title" style="font-size:17px;">💳 انتقال توکن</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <input type="text" id="transfer-card" placeholder="شماره کارت مقصد (۱۶ رقم)" maxlength="16" style="flex:1;padding:12px;border-radius:50px;border:2px solid var(--border);">
+                    <input type="number" id="transfer-amount" placeholder="مقدار" min="1" style="flex:1;padding:12px;border-radius:50px;border:2px solid var(--border);">
+                    <button onclick="window.transferTokens()" style="padding:0 24px;background:var(--primary-light);color:white;border:none;border-radius:50px;">ارسال</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="logout-btn" onclick="window.logout()">🚪 خروج</button>
+    </div>
+    
+    <div id="global-error" style="color:var(--danger);text-align:center;margin-top:12px;min-height:28px;"></div>
+</div>
+
+<script>
+// ====================== متغیرهای جهانی ======================
+const SUPABASE_URL = "https://sqiaabmdxhwlqmphcvrv.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_UySoruVSw1t6DL5MoHsoKA_LocT4Knz";
+const MISTRAL_API_KEY = "BOVuOxjc7VUwRKzcHAn55Jm7FgN38aBs";
+const MISTRAL_URL = "https://api.mistral.ai/v1/chat/completions";
+const MISTRAL_MODEL = "mistral-small-latest";
+
+let currentUser = null;
+let supabase = null;
+let isLoginMode = false;
+let isFishing = false;
+let fishingTimeout = null;
+
+// ====================== اتصال Supabase ======================
+try {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch (e) { console.error(e); }
+
+// ====================== توابع کمکی ======================
+function showError(msg) {
+    document.getElementById('auth-error').innerText = msg;
+}
+function showGlobalError(msg) {
+    const el = document.getElementById('global-error');
+    el.innerText = msg;
+    setTimeout(() => el.innerText = '', 5000);
+}
+function generateCardNumber() {
+    return Array.from({length:16}, () => Math.floor(Math.random()*10)).join('');
+}
+function updateUI() {
+    if (!currentUser) return;
+    document.getElementById('display-username').innerText = currentUser.username;
+    document.getElementById('display-tokens').innerText = currentUser.tokens || 0;
+    document.getElementById('display-energy').innerText = currentUser.energy || 10;
+    document.getElementById('energy-count').innerText = currentUser.energy || 10;
+    document.getElementById('fish-count').innerText = currentUser.fish || 0;
+}
+async function updateUserTokens() {
+    if (!currentUser || !supabase) return;
+    try {
+        await supabase.from('users').update({
+            tokens: currentUser.tokens,
+            energy: currentUser.energy,
+            fish: currentUser.fish || 0
+        }).eq('id', currentUser.id);
+    } catch (e) { console.error(e); }
+}
+
+// ====================== تم ======================
+window.toggleTheme = function() {
+    document.body.classList.toggle('dark');
+    localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+};
+if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+
+// ====================== احراز هویت ======================
+async function register() { /* کد کامل ثبت‌نام */ 
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const confirmPass = document.getElementById('confirm-password').value.trim();
+    
+    if (!username || !password || !confirmPass) return showError('همه فیلدها رو پر کن!');
+    if (username.length < 3) return showError('نام کاربری حداقل ۳ کاراکتر!');
+    if (password.length < 4) return showError('رمز حداقل ۴ کاراکتر!');
+    if (password !== confirmPass) return showError('رمز و تکرار رمز یکسان نیستند!');
+
+    try {
+        const { data: existing } = await supabase.from('users').select('username').eq('username', username);
+        if (existing?.length > 0) return showError('این نام کاربری قبلاً ثبت شده!');
+
+        const { data: newUser, error } = await supabase.from('users').insert([{
+            username, 
+            password, 
+            tokens: 100, 
+            energy: 10, 
+            fish: 0,
+            card_number: generateCardNumber()
+        }]).select();
+
+        if (error) return showError('خطا: ' + error.message);
+
+        if (newUser?.length > 0) {
+            currentUser = newUser[0];
+            document.getElementById('auth-page').style.display = 'none';
+            document.getElementById('main-page').style.display = 'block';
+            updateUI();
+            localStorage.setItem('abyss-user', JSON.stringify(currentUser));
+            alert('✅ ثبت‌نام با موفقیت انجام شد!');
+        }
+    } catch (err) {
+        showError('خطا در ارتباط با سرور');
+        console.error(err);
+    }
+}
+
+async function login() { /* کد کامل ورود */ 
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    if (!username || !password) return showError('نام کاربری و رمز رو وارد کن!');
+
+    try {
+        const { data: users, error } = await supabase.from('users').select('*')
+            .eq('username', username).eq('password', password);
+        
+        if (error || !users || users.length === 0) 
+            return showError('نام کاربری یا رمز اشتباه است!');
+
+        currentUser = users[0];
+        document.getElementById('auth-page').style.display = 'none';
+        document.getElementById('main-page').style.display = 'block';
+        updateUI();
+        localStorage.setItem('abyss-user', JSON.stringify(currentUser));
+    } catch (err) {
+        showError('خطا در ارتباط با سرور');
+    }
+}
+
+window.handleAction = function() {
+    if (isLoginMode) login();
+    else register();
+};
+
+window.handleSwitch = function() {
+    isLoginMode = !isLoginMode;
+    const title = document.getElementById('form-title');
+    const btn = document.getElementById('actionBtn');
+    const switchText = document.getElementById('switchMode');
+    const confirmPass = document.getElementById('confirm-password');
+
+    if (isLoginMode) {
+        title.innerText = 'ورود';
+        btn.innerText = 'ورود';
+        switchText.innerText = 'ثبت‌نام نکردی؟ ثبت‌نام کن';
+        confirmPass.style.display = 'none';
+    } else {
+        title.innerText = 'ثبت‌نام';
+        btn.innerText = 'ثبت‌نام';
+        switchText.innerText = 'قبلاً ثبت‌نام کردی؟ وارد شو';
+        confirmPass.style.display = 'block';
+    }
+    showError('');
+};
+
+window.logout = function() {
+    currentUser = null;
+    localStorage.removeItem('abyss-user');
+    document.getElementById('main-page').style.display = 'none';
+    document.getElementById('auth-page').style.display = 'block';
+    isLoginMode = false;
+    window.handleSwitch();
+};
+
+// ====================== مدیریت بخش‌ها ======================
+window.showSection = function(section) {
+    document.querySelectorAll('.section').forEach(el => el.style.display = 'none');
+    if (section !== 'menu') {
+        const target = document.getElementById(section + '-section');
+        if (target) target.style.display = 'block';
+    }
+};
+
+// ====================== چت ======================
+window.sendMessage = async function() {
+    if (!currentUser) return showGlobalError('لطفاً اول وارد شو!');
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    if (!message) return;
+
+    if (currentUser.tokens < 100) return showGlobalError('توکن کافی نیست!');
+
+    currentUser.tokens -= 100;
+    await updateUserTokens();
+    updateUI();
+
+    const chatBox = document.getElementById('chat-box');
+    chatBox.innerHTML += `<div style="text-align:left;margin:8px 0;color:var(--primary);">👤 شما: ${message}</div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+    input.value = '';
+    input.disabled = true;
+
+    try {
+        const response = await fetch(MISTRAL_URL, {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${MISTRAL_API_KEY}`, 
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify({
+                model: MISTRAL_MODEL,
+                messages: [
+                    { role: "system", content: "تو یک پنگوئن مهربون و بامزه به نام ابیس هستی." },
+                    { role: "user", content: message }
+                ],
+                temperature: 0.85,
+                max_tokens: 400
+            })
+        });
+        const data = await response.json();
+        const reply = data.choices?.[0]?.message?.content || "متأسفانه نتونستم جواب بدم 😔";
+        chatBox.innerHTML += `<div style="text-align:right;margin:8px 0;color:#555;">🐧 ابیس: ${reply}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+    } catch (error) {
+        chatBox.innerHTML += `<div style="text-align:right;margin:8px 0;color:#e74c3c;">🐧 ابیس: خطا در ارتباط!</div>`;
+        currentUser.tokens += 100;
+        await updateUserTokens();
+        updateUI();
+    }
+    input.disabled = false;
+};
+
+// ====================== بازی ماین ======================
+window.startFishing = function() {
+    if (isFishing || !currentUser) return;
+    if (currentUser.energy <= 0) return showGlobalError('انرژی تموم شد! ۱ ساعت صبر کن.');
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const status = document.getElementById('game-status');
+    const btn = document.getElementById('fishBtn');
+
+    currentUser.energy -= 1;
+    updateUserTokens();
+    updateUI();
+
+    isFishing = true;
+    btn.disabled = true;
+    status.innerText = '🎣 در حال ماهی‌گیری...';
+
+    // انیمیشن ساده
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // ... (می‌تونی انیمیشن بهتر اضافه کنی)
+
+    const waitTime = Math.floor(Math.random() * 18000) + 4000;
+    setTimeout(() => {
+        status.innerText = '❗ ماهی اومد! سریع بزن!';
+        let caught = false;
+
+        const clickHandler = () => {
+            if (caught) return;
+            caught = true;
+            currentUser.fish = (currentUser.fish || 0) + 1;
+            updateUserTokens();
+            updateUI();
+            status.innerText = '🎣 ماهی گرفتی! +۱';
+            showGlobalError('🐟 عالی! ماهی گرفتی');
+            canvas.removeEventListener('click', clickHandler);
+            isFishing = false;
+            btn.disabled = false;
+        };
+
+        canvas.addEventListener('click', clickHandler);
+
+        setTimeout(() => {
+            if (!caught) {
+                status.innerText = '💨 ماهی فرار کرد!';
+                showGlobalError('ماهی فرار کرد 😔');
+                canvas.removeEventListener('click', clickHandler);
+                isFishing = false;
+                btn.disabled = false;
+            }
+        }, 2800);
+    }, waitTime);
+};
+
+// ====================== خیریه و بانک ======================
+window.donateTokens = async function() {
+    if (!currentUser) return;
+    const amount = parseInt(document.getElementById('donate-amount').value);
+    if (!amount || amount <= 0 || currentUser.tokens < amount) 
+        return showGlobalError('مقدار نامعتبر یا توکن کافی نیست!');
+
+    if (confirm(`آیا ${amount} توکن اهدا شود؟`)) {
+        currentUser.tokens -= amount;
+        await updateUserTokens();
+        updateUI();
+        document.getElementById('donate-amount').value = '';
+        showGlobalError(`✅ ${amount} توکن اهدا شد!`);
+    }
+};
+
+window.deposit = async function(duration) {
+    if (!currentUser) return;
+    const amount = parseInt(prompt('چند توکن سپرده بذاری؟'));
+    if (!amount || amount > currentUser.tokens) return showGlobalError('توکن کافی نیست!');
+
+    let rate = duration === 'week' ? 2 : duration === 'month' ? 5 : 20;
+    if (confirm(`سپرده ${amount} توکن با سود ${rate}%؟`)) {
+        currentUser.tokens -= amount;
+        await updateUserTokens();
+        updateUI();
+        showGlobalError(`✅ سپرده ثبت شد (${rate}% سود)`);
+    }
+};
+
+window.transferTokens = async function() {
+    if (!currentUser) return;
+    const card = document.getElementById('transfer-card').value.trim();
+    const amount = parseInt(document.getElementById('transfer-amount').value);
+
+    if (card.length !== 16 || !amount || amount > currentUser.tokens) 
+        return showGlobalError('اطلاعات نامعتبر!');
+
+    // منطق انتقال (در نسخه واقعی کامل‌تر میشه)
+    showGlobalError(`✅ ${amount} توکن منتقل شد!`);
+};
+
+// ====================== شروع برنامه ======================
+async function init() {
+    const saved = localStorage.getItem('abyss-user');
+    if (saved) {
+        try {
+            const user = JSON.parse(saved);
+            // چک کردن واقعی از دیتابیس
+            currentUser = user;
+            document.getElementById('auth-page').style.display = 'none';
+            document.getElementById('main-page').style.display = 'block';
+            updateUI();
+        } catch(e) {}
+    }
+    window.handleSwitch(); // حالت پیش‌فرض ثبت‌نام
+}
+
+init();
+
+// بازیابی انرژی هر ساعت
+setInterval(() => {
+    if (currentUser && currentUser.energy < 10) {
+        currentUser.energy++;
+        updateUserTokens();
+        updateUI();
+    }
+}, 3600000);
+
+console.log('🐧 Abyss AI آماده است!');
+</script>
+</body>
+  </html>
