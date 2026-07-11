@@ -1,1 +1,0 @@
-pygame-wheels==2.5.2
