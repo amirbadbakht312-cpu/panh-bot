@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🐧 Abyss AI - ماهی‌گیری</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+        body{background:#0a0e1a;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:'Courier New',monospace;padding:10px}
+        .game-wrapper{max-width:650px;width:100%;background:#16213e;border-radius:20px;padding:20px;box-shadow:0 8px 40px rgba(0,0,0,0.8);border:2px solid #0f3460}
+        .title{text-align:center;font-size:18px;font-weight:bold;color:#e0e0e0;margin-bottom:12px;letter-spacing:2px}
+        .title span{color:#4fc3f7}
+        #gameCanvas{width:100%;height:420px;background:#1a3a5c;border-radius:16px;display:block;border:2px solid #0f3460;cursor:pointer;image-rendering:pixelated;touch-action:none}
+        .status{padding:10px;background:#0a0e1a;border-radius:8px;margin:10px 0;min-height:42px;font-size:13px;color:#c8d8e0;text-align:center;border:1px solid #0f3460}
+        .stats{display:flex;justify-content:space-around;margin:8px 0;font-size:16px;font-weight:bold}
+        .stats .fish-stat{color:#4fc3f7}.stats .energy-stat{color:#f7dc6f}
+        .energy-bar{width:100%;height:10px;background:#0a0e1a;border-radius:4px;overflow:hidden;margin:6px 0;border:1px solid #0f3460}
+        .energy-bar-fill{height:100%;width:100%;background:#4fc3f7;border-radius:4px;transition:width 0.3s}
+        .buttons{display:flex;gap:10px;margin:10px 0}
+        .btn{flex:1;padding:12px;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;transition:all 0.2s;font-family:'Courier New',monospace}
+        .btn-fish{background:#0f3460;color:#4fc3f7;border:1px solid #4fc3f7}
+        .btn-feed{background:#2d2d2d;color:#f7dc6f;border:1px solid #f7dc6f}
+        .hint{text-align:center;font-size:11px;color:#4a5a6a;margin-top:8px}
+    </style>
+</head>
+<body>
+<div class="game-wrapper">
+    <div class="title">🐧 <span>ABYSS</span> AI</div>
+    <canvas id="gameCanvas" width="640" height="420"></canvas>
+    <div class="status" id="status">🎣 برای شروع ماهی‌گیری، دکمه رو بزن!</div>
+    <div class="stats">
+        <span class="fish-stat">🐟 <span id="fishCount">0</span></span>
+        <span class="energy-stat">⚡ <span id="energyDisplay">10</span>/10</span>
+    </div>
+    <div class="energy-bar"><div class="energy-bar-fill" id="energyBar" style="width:100%;"></div></div>
+    <div class="buttons">
+        <button class="btn btn-fish" id="fishBtn">🎣 چوب بینداز!</button>
+        <button class="btn btn-feed" id="feedBtn">🐧 غذا دادن</button>
+    </div>
+    <div class="hint">👆 روی رودخانه کلیک کن تا ماهی بگیری!</div>
+</div>
+
+<script>
+// ============================================================
+// ABYSS AI - بازسازی کامل بر اساس استایل استاردو ولی
+// ============================================================
+
+// === تنظیمات ===
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const W = 640, H = 420;
+const P = 2; // پیکسل ۲×۲ برای شفافیت بیشتر (معادل ۱۶×۳۲ برای کاراکتر)
+
+// === وضعیت بازی ===
+let fishCount = 0, energy = 10, maxEnergy = 10;
+let isFishing = false, isWaiting = false, fishVisible = false, fishCaught = false;
+let fishX = 0, fishY = 0, fishTimer = null, clickTimer = null;
+let bobberX = 0, bobberY = 0, bobberVisible = false, lineVisible = false;
+let penguinX = 100, penguinY = 310, penguinBounce = 0, penguinDir = 0;
+let caughtFishTimer = 0, walkFrame = 0;
+
+const status = document.getElementById('status');
+const fishCountEl = document.getElementById('fishCount');
+const energyDisplay = document.getElementById('energyDisplay');
+const energyBar = document.getElementById('energyBar');
+const fishBtn = document.getElementById('fishBtn');
+const feedBtn = document.getElementById('feedBtn');
+
+// ============================================================
+// ۱. توابع پایه پیکسلی (با پیکسل ۱×۱ برای دقت بالا)
+// ============================================================
+
+function px(x, y, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, 1, 1);
+}
+
+function rect(x, y, w, h, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w, h);
+}
+
+// ============================================================
+// ۲. رسم پنگوئن استاردوولی (سایز ۱۶×۳۲ پیکسل)
+// ============================================================
+
+function drawPenguinStardew(x, y, dir, frame) {
+    // x,y = موقعیت پای پنگوئن
+    const bx = Math.round(x);
+    const by = Math.round(y);
+
+    // === سایه ===
+    rect(bx - 6, by + 20, 12, 2, 'rgba(0,0,0,0.2)');
+
+    // === بدن (تپل و کوتاه) ===
+    // بدنه اصلی (۱۶ عرض × ۲۰ ارتفاع)
+    rect(bx - 7, by + 2, 14, 18, '#1a1a2e');
+    rect(bx - 6, by + 1, 12, 2, '#1a1a2e');
+    rect(bx - 8, by + 3, 2, 14, '#1a1a2e');
+    rect(bx + 6, by + 3, 2, 14, '#1a1a2e');
+
+    // شکم سفید (۱۰ عرض × ۱۴ ارتفاع)
+    rect(bx - 5, by + 4, 10, 14, '#e8e8e8');
+    rect(bx - 4, by + 3, 8, 2, '#e8e8e8');
+    rect(bx - 6, by + 5, 2, 10, '#e8e8e8');
+    rect(bx + 4, by + 5, 2, 10, '#e8e8e8');
+
+    // === سر (گرد) ===
+    rect(bx - 5, by - 4, 10, 8, '#1a1a2e');
+    rect(bx - 6, by - 3, 2, 6, '#1a1a2e');
+    rect(bx + 4, by - 3, 2, 6, '#1a1a2e');
+    rect(bx - 4, by - 5, 8, 4, '#1a1a2e');
+
+    // صورت سفید
+    rect(bx - 3, by - 3, 6, 6, '#e8e8e8');
+    rect(bx - 4, by - 2, 2, 4, '#e8e8e8');
+    rect(bx + 2, by - 2, 2, 4, '#e8e8e8');
+
+    // === چشم‌ها (یک پیکسل سفید با یک نقطه سیاه پایین سمت چپ) ===
+    // چشم چپ
+    px(bx - 3, by - 3, '#ffffff');
+    px(bx - 3, by - 2, '#1a1a2e');
+    px(bx - 2, by - 2, '#ffffff');
+
+    // چشم راست
+    px(bx + 1, by - 3, '#ffffff');
+    px(bx + 1, by - 2, '#1a1a2e');
+    px(bx + 2, by - 2, '#ffffff');
+
+    // === منقار (کوچک) ===
+    rect(bx - 1, by, 2, 2, '#e67e22');
+    rect(bx, by + 1, 2, 1, '#e67e22');
+
+    // === گونه‌ها (صورتی کم رنگ) ===
+    rect(bx - 5, by, 2, 2, 'rgba(255,150,150,0.25)');
+    rect(bx + 3, by, 2, 2, 'rgba(255,150,150,0.25)');
+
+    // === پاها ===
+    rect(bx - 4, by + 20, 3, 2, '#e67e22');
+    rect(bx + 1, by + 20, 3, 2, '#e67e22');
+    rect(bx - 5, by + 21, 2, 1, '#e67e22');
+    rect(bx + 3, by + 21, 2, 1, '#e67e22');
+
+    // === بال‌ها ===
+    rect(bx - 9, by + 4, 2, 8, '#1a1a2e');
+    rect(bx + 7, by + 4, 2, 8, '#1a1a2e');
+    rect(bx - 10, by + 6, 1, 4, '#1a1a2e');
+    rect(bx + 9, by + 6, 1, 4, '#1a1a2e');
+
+    // === کلاه (اختیاری - مثل استاردو) ===
+    rect(bx - 4, by - 8, 8, 4, '#e74c3c');
+    rect(bx - 3, by - 10, 6, 2, '#e74c3c');
+}
+
+// ============================================================
+// ۳. رسم ماهی استاردوولی
+// ============================================================
+
+function drawFishStardew(x, y, color, dir) {
+    const d = dir || 1;
+    const c = color || '#4a7a5a';
+
+    // بدن ماهی (شناور در آب)
+    rect(x, y, 14 * d, 6, c);
+    rect(x + 2 * d, y - 2, 10 * d, 2, c);
+    rect(x + 2 * d, y + 6, 10 * d, 2, c);
+
+    // سر (گرد)
+    rect(x + 8 * d, y, 4 * d, 6, c);
+    rect(x + 10 * d, y - 1, 2 * d, 2, c);
+    rect(x + 10 * d, y + 5, 2 * d, 2, c);
+
+    // دم
+    rect(x - 4 * d, y + 2, 4 * d, 2, c);
+    rect(x - 6 * d, y + 3, 2 * d, 2, c);
+
+    // چشم
+    rect(x + 6 * d, y + 2, 2, 2, 'rgba(255,255,255,0.4)');
+    px(x + 7 * d, y + 3, 'rgba(0,0,0,0.2)');
+
+    // فلس‌ها
+    for (let i = 0; i < 3; i++) {
+        rect(x + 2 * d + i * 3 * d, y + 4, 1, 1, 'rgba(255,255,255,0.1)');
+    }
+}
+
+// ============================================================
+// ۴. رسم چوب‌پران و علائم
+// ============================================================
+
+function drawBobberStardew(x, y) {
+    rect(x, y, 4, 4, '#e74c3c');
+    rect(x + 1, y + 1, 2, 2, '#ffffff');
+    rect(x, y + 4, 4, 2, '#e74c3c');
+    // موج‌ها
+    rect(x - 2, y + 6, 8, 2, 'rgba(255,255,255,0.1)');
+    rect(x - 4, y + 8, 12, 2, 'rgba(255,255,255,0.05)');
+}
+
+function drawExclamationStardew(x, y) {
+    rect(x, y, 3, 6, '#e74c3c');
+    rect(x, y + 8, 3, 3, '#e74c3c');
+}
+
+function drawCaughtFishStardew(x, y) {
+    rect(x - 8, y - 6, 16, 8, '#d4a800');
+    rect(x - 6, y - 8, 12, 2, '#d4a800');
+    rect(x - 6, y + 2, 12, 2, '#d4a800');
+    rect(x - 12, y - 4, 4, 4, '#d4a800');
+    rect(x - 14, y - 2, 2, 4, '#d4a800');
+    // چشم
+    rect(x + 2, y - 4, 4, 4, '#ffffff');
+    px(x + 3, y - 3, '#1a1a2e');
+}
+
+// ============================================================
+// ۵. پس‌زمینه استاردوولی
+// ============================================================
+
+function drawBackgroundStardew() {
+    // === آسمان ===
+    const grad = ctx.createLinearGradient(0, 0, 0, 140);
+    grad.addColorStop(0, '#0a1a2e');
+    grad.addColorStop(0.4, '#1a3a5a');
+    grad.addColorStop(0.8, '#2a5a7a');
+    grad.addColorStop(1, '#3a6a8a');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, 140);
+
+    // === خورشید (پیکسلی) ===
+    const sx = 560, sy = 25;
+    for (let i = -6; i <= 6; i++) {
+        for (let j = -6; j <= 6; j++) {
+            const d = Math.abs(i) + Math.abs(j);
+            if (d <= 6) {
+                const alpha = d === 0 ? 1 : d === 1 ? 0.9 : d === 2 ? 0.7 : d === 3 ? 0.4 : 0.2;
+                const size = d === 0 ? 3 : d === 1 ? 3 : 2;
+                ctx.fillStyle = `rgba(247, 220, 111, ${alpha})`;
+                ctx.fillRect(sx + i * 4 - size/2, sy + j * 4 - size/2, size, size);
+            }
+        }
+    }
+
+    // === ابرها ===
+    const clouds = [
+        [40, 30, 12, 4],
+        [180, 25, 14, 5],
+        [400, 35, 10, 3]
+    ];
+    clouds.forEach(([cx, cy, w, h]) => {
+        ctx.fillStyle = 'rgba(255,255,255,0.06)';
+        for (let i = 0; i < w; i++) {
+            for (let j = 0; j < h; j++) {
+                if (Math.random() > 0.3) {
+                    ctx.fillRect(cx + i * 4, cy + j * 4, 4, 4);
+                }
+            }
+        }
+    });
+
+    // === کوه‌ها ===
+    const mountains = [
+        [0, 120, 150, 80, '#1a2a3a'],
+        [160, 120, 200, 70, '#2a3a4a'],
+        [380, 120, 160, 85, '#1a2a3a'],
+        [550, 120, 150, 75, '#2a3a4a']
+    ];
+    mountains.forEach(([mx, my, mw, mh, color]) => {
+        ctx.fillStyle = color;
+        const steps = Math.floor(mw / 4);
+        for (let i = 0; i < steps; i++) {
+            const x = mx + i * 4;
+            const progress = i / steps;
+            const height = Math.sin(progress * Math.PI) * mh;
+            ctx.fillRect(x, my + mh - height, 4, height);
+        }
+        // برف
+        ctx.fillStyle = 'rgba(200,200,220,0.2)';
+        for (let i = 20; i < steps - 20; i++) {
+            const x = mx + i * 4;
+            const progress = i / steps;
+            const height = Math.sin(progress * Math.PI) * mh;
+            if (height > mh - 20) {
+                ctx.fillRect(x, my + mh - height, 4, 4);
+            }
+        }
+    });
+
+    // === زمین ===
+    ctx.fillStyle = '#3a5a2a';
+    ctx.fillRect(0, 130, W, 25);
+    ctx.fillStyle = '#2a4a1a';
+    for (let i = 0; i < W; i += 6) {
+        ctx.fillRect(i, 133, 3, 2);
+    }
+
+    // === رودخانه (ایزومتریک) ===
+    ctx.fillStyle = '#1a4a5a';
+    ctx.beginPath();
+    ctx.moveTo(30, 140);
+    ctx.lineTo(W - 30, 140);
+    ctx.lineTo(W - 80, H);
+    ctx.lineTo(80, H);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(10, 42, 58, 0.6)';
+    ctx.beginPath();
+    ctx.moveTo(50, 140);
+    ctx.lineTo(W - 50, 140);
+    ctx.lineTo(W - 90, H);
+    ctx.lineTo(90, H);
+    ctx.fill();
+
+    // === موج‌ها ===
+    const time = Date.now() / 3000;
+    for (let i = 0; i < 25; i++) {
+        const wx = 40 + i * 24 + Math.sin(time + i * 1.3) * 8;
+        const wy = 170 + i * 8 + Math.sin(i * 1.1) * 4;
+        ctx.fillStyle = `rgba(255,255,255,${0.03 + Math.sin(time + i) * 0.015})`;
+        for (let j = 0; j < 4; j++) {
+            ctx.fillRect(wx + j * 4, wy + Math.floor(j / 2) * 4, 4, 4);
+        }
+    }
+
+    // === درخت‌ها ===
+    function drawTree(tx, ty, scale) {
+        const s = scale || 1;
+        ctx.fillStyle = '#4a3a2a';
+        ctx.fillRect(tx + 3 * s, ty + 10 * s, 3 * s, 8 * s);
+        ctx.fillStyle = '#2a5a2a';
+        ctx.fillRect(tx * s, ty + 2 * s, 9 * s, 8 * s);
+        ctx.fillRect(tx - 3 * s, ty + 4 * s, 15 * s, 6 * s);
+        ctx.fillStyle = '#3a6a3a';
+        ctx.fillRect(tx + 3 * s, ty * s, 3 * s, 4 * s);
+    }
+    drawTree(30, 125, 1);
+    drawTree(590, 125, 1);
+    drawTree(310, 120, 0.8);
+    drawTree(510, 128, 0.9);
+
+    // === چمن‌های کوچک ===
+    for (let i = 0; i < 30; i++) {
+        const cx = 20 + i * 20 + Math.sin(i * 1.7) * 5;
+        const cy = 128 + Math.sin(i * 2.3) * 3;
+        ctx.fillStyle = '#4a8a3a';
+        ctx.fillRect(cx, cy, 2, 3);
+        ctx.fillStyle = '#5a9a4a';
+        ctx.fillRect(cx + 1, cy - 1, 1, 2);
+    }
+}
+
+// ============================================================
+// ۶. منطق بازی
+// ============================================================
+
+function startFishing() {
+    if (isFishing || isWaiting) {
+        status.textContent = '⏳ صبر کن!';
+        status.style.color = '#f39c12';
+        return;
+    }
+    if (energy < 1) {
+        status.textContent = '❌ انرژی کافی نیست!';
+        status.style.color = '#e74c3c';
+        return;
+    }
+    energy--;
+    updateUI();
+    isFishing = true;
+    status.textContent = '🎣 چوب به آب افتاد...';
+    status.style.color = '#4fc3f7';
+
+    bobberX = 150 + Math.random() * 340;
+    bobberY = 180 + Math.random() * 70;
+    bobberVisible = true;
+    lineVisible = true;
+
+    const waitTime = 3000 + Math.random() * 5000;
+    fishTimer = setTimeout(showFish, waitTime);
+}
+
+function showFish() {
+    isFishing = false;
+    isWaiting = true;
+    fishVisible = true;
+    fishX = 120 + Math.random() * 360;
+    fishY = 180 + Math.random() * 70;
+    status.textContent = '🐟 ماهی پیدا شد! کلیک کن! (۳ ثانیه)';
+    status.style.color = '#4fc3f7';
+    clickTimer = setTimeout(fishEscaped, 3000);
+}
+
+function catchFish() {
+    if (!isWaiting || !fishVisible) return;
+    clearTimeout(clickTimer);
+    isWaiting = false;
+    fishVisible = false;
+    fishCaught = true;
+    bobberVisible = false;
+    lineVisible = false;
+    fishCount++;
+    updateUI();
+    status.textContent = '🎉 ماهی گرفتی! +۱ 🐟';
+    status.style.color = '#4fc3f7';
+    isFishing = false;
+    penguinBounce = -8;
+    setTimeout(() => penguinBounce = 0, 400);
+    caughtFishTimer = 40;
+}
+
+function fishEscaped() {
+    if (fishCaught) return;
+    isWaiting = false;
+    fishVisible = false;
+    bobberVisible = false;
+    lineVisible = false;
+    status.textContent = '😔 ماهی فرار کرد!';
+    status.style.color = '#e67e22';
+    isFishing = false;
+}
+
+function feedPenguin() {
+    if (fishCount < 10) {
+        status.textContent = `❌ به ۱۰ ماهی نیاز داری! (داری ${fishCount})`;
+        status.style.color = '#e74c3c';
+        return;
+    }
+    if (energy >= maxEnergy) {
+        status.textContent = '✅ انرژی کامل است!';
+        status.style.color = '#4fc3f7';
+        return;
+    }
+    fishCount -= 10;
+    energy = Math.min(energy + 5, maxEnergy);
+    updateUI();
+    status.textContent = '🐧 پنگوئن خوشحال شد! +۵ انرژی ❤️';
+    status.style.color = '#f7dc6f';
+    penguinBounce = -10;
+    setTimeout(() => penguinBounce = 0, 500);
+}
+
+// ============================================================
+// ۷. رویدادها
+// ============================================================
+
+canvas.addEventListener('click', function(e) {
+    if (!isWaiting || !fishVisible) return;
+    const rect = this.getBoundingClientRect();
+    const scaleX = this.width / rect.width;
+    const scaleY = this.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    const dist = Math.sqrt(Math.pow(x - fishX, 2) + Math.pow(y - fishY, 2));
+    if (dist < 30) {
+        catchFish();
+    } else {
+        status.textContent = '👆 نزدیک‌تر به ماهی کلیک کن!';
+        status.style.color = '#f39c12';
+        setTimeout(() => {
+            if (isWaiting) {
+                status.textContent = '🐟 ماهی پیدا شد! کلیک کن! (۳ ثانیه)';
+                status.style.color = '#4fc3f7';
+            }
+        }, 1000);
+    }
+});
+
+fishBtn.addEventListener('click', startFishing);
+feedBtn.addEventListener('click', feedPenguin);
+
+document.addEventListener('keydown', e => {
+    if (e.key === ' ' || e.key === 'Space') { e.preventDefault();
+        startFishing(); }
+    if (e.key === 'f' || e.key === 'F') feedPenguin();
+});
+
+// ============================================================
+// ۸. رندر و آپدیت
+// ============================================================
+
+function updateUI() {
+    fishCountEl.textContent = fishCount;
+    energyDisplay.textContent = energy;
+    const pct = (energy / maxEnergy) * 100;
+    energyBar.style.width = pct + '%';
+    energyBar.style.background = pct > 50 ? '#4fc3f7' : pct > 25 ? '#f7dc6f' : '#e74c3c';
+}
+
+function render() {
+    ctx.clearRect(0, 0, W, H);
+    drawBackgroundStardew();
+
+    // خط ماهی‌گیری
+    if (lineVisible) {
+        ctx.fillStyle = 'rgba(255,255,255,0.15)';
+        ctx.fillRect(84, 280, 1, bobberY - 280);
+    }
+
+    // چوب‌پران
+    if (bobberVisible) drawBobberStardew(bobberX, bobberY);
+
+    // ماهی
+    if (fishVisible) {
+        const colors = ['#4a7a5a', '#5a6a4a', '#4a6a5a', '#3a7a5a'];
+        const dir = Math.random() > 0.5 ? 1 : -1;
+        drawFishStardew(fishX, fishY, colors[Math.floor(Math.random() * colors.length)], dir);
+    }
+
+    // پنگوئن
+    drawPenguinStardew(penguinX, penguinY + penguinBounce, 0, 0);
+
+    // علامت تعجب
+    if (fishVisible) drawExclamationStardew(penguinX + 14, penguinY - 24);
+
+    // ماهی صید شده
+    if (caughtFishTimer > 0) {
+        drawCaughtFishStardew(W / 2, 60);
+        caughtFishTimer--;
+    }
+
+    // چوب ماهی‌گیری (دست پنگوئن)
+    ctx.fillStyle = '#4a3a2a';
+    ctx.fillRect(82, 265, 14, 2);
+    ctx.fillRect(88, 258, 2, 12);
+
+    requestAnimationFrame(render);
+}
+
+// ============================================================
+// ۹. شروع
+// ============================================================
+
+updateUI();
+render();
+console.log('🐧 Abyss AI - نسخه استاردوولی کامل راه‌اندازی شد!');
+console.log('📐 سایز کاراکتر: 16x32 پیکسل (مثل استاردو)');
+console.log('🎮 Space: چوب انداختن | F: غذا دادن');
+</script>
+</body>
+</html>
